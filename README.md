@@ -35,32 +35,6 @@
 **主要ポート（デフォルト）**
 - Judge0 core API: `2358`（内部サービス名 `server` または `judge0` によって異なる）
 - Demo (judge0_flask): `5000`
-# Judge0 Demo — ローカル起動ガイドとアーキテクチャ
-
-このリポジトリは Judge0（オンラインジャッジコア）を使ったローカルデモ環境です。ブラウザからコードを送信し、Judge0 で実行して結果を確認するまでの一連の流れを Docker Compose で再現します。
-
-目次
-- 概要
-- コンポーネント構成
-- クイックスタート（Docker）
-- `code/` をローカルで実行する方法（開発用）
-- 主な API
-- トラブルシューティング
-- ログ確認
-- 補足（開発ヒント・変更履歴）
-
-概要
-- `judge0`（Judge0 core）、`judge0_flask`（デモ Flask サービス）、`code`（フロント + 同一オリジン proxy）を組み合わせて動かします。
-
-コンポーネント（短縮）
-- `judge0`：Judge0 core（評価エンジン）
-- `judge0_flask`：Judge0 とやりとりするデモサーバ（Flask）
-- `code`：フロントエンド＋同一オリジン proxy（Flask）
-
-主要ポート（デフォルト）
-- Judge0 core API: `2358`（Compose 設定によりサービス名は `server` や `judge0` になる場合あり）
-- Demo (judge0_flask): `5000`
-- Web / Proxy (code): `5173`
 
 アーキテクチャ図（簡易）
 
