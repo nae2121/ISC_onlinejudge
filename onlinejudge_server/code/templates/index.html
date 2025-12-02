@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ace Editor Playground</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="topbar">
+    <button id="homeBtn" class="tab-button">Home</button>
+    <div class="language-selector" style="display:flex;align-items:center;gap:8px">
+      <label for="mode">Language:</label>
+      <select id="mode">
+        <option value="">Loading languages…</option>
+      </select>
+    </div>
+    <div style="flex:1"></div>
+    <button id="runBtn" class="tab-button" data-disabled="true" title="Judge0 に送信して実行" style="opacity:0.95">実行</button>
+    <button id="settingsBtn" class="tab-button">Settings</button>
+  </div>
+
+  <div class="workspace">
+    <div class="left-panel" id="leftPanel">
+      <div class="panel-header"><strong>Problem</strong><button class="minimize" data-target="leftPanel" title="Minimize left">−</button></div>
+      <div id="problemBody" class="panel-content">ここに課題文が表示されます。</div>
+    </div>
+
+    <div class="col-resizer" id="resizer" title="Resize left"></div>
+
+    <div class="center-panel">
+      <div id="editor">// Ace editor</div>
+    </div>
+
+    <div class="col-resizer" id="resizer2" title="Resize right"></div>
+
+    <div class="right-panel" id="rightPanel">
+      <div class="panel-header"><strong>IO</strong><button class="minimize" data-target="rightPanel" title="Minimize right">−</button></div>
+      <div class="io-container">
+        <div id="inputSection" class="io-section" style="flex:0 0 220px;display:flex;flex-direction:column;">
+          <div class="panel-header" style="padding:8px;border-bottom:0;display:flex;justify-content:space-between;align-items:center">
+            <strong>Input</strong>
+            <button class="io-minimize" data-target="inputSection" title="Minimize Input">−</button>
+          </div>
+          <div class="panel-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+            <textarea id="stdin" placeholder="標準入力" style="flex:1;height:100%;overflow:auto;min-height:140px;box-sizing:border-box;"></textarea>
+          </div>
+        </div>
+
+        <div class="io-resizer" id="ioResizer" title="Resize IO"></div>
+        <div id="outputSection" class="io-section" style="flex:1;display:flex;flex-direction:column;position:relative;min-height:0;">
+          <div class="panel-header" style="padding:8px;border-bottom:0;display:flex;justify-content:space-between;align-items:center">
+            <strong>Output</strong>
+            <button class="io-minimize" data-target="outputSection" title="Minimize Output">−</button>
+          </div>
+          <div class="panel-content" style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+            <textarea id="stdout" placeholder="標準出力" readonly style="flex:1;height:100%;overflow:auto;min-height:0;box-sizing:border-box;"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<div id="modalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999"></div>
+
+<!-- Settings (includes Judge0 section) -->
+<div id="settingsModal" style="display:none;position:fixed;left:50%;top:12%;transform:translateX(-50%);background:var(--panel);padding:12px;border-radius:8px;z-index:1000;min-width:420px;max-height:76vh;overflow:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong>Settings</strong>
+    <div>
+      <button id="closeSettings" class="tab-button">✕</button>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
+
+    <!-- Editor settings -->
+    <div style="border-bottom:1px solid rgba(0,0,0,0.04);padding-bottom:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <label>Theme:</label>
+        <button class="theme-btn" data-theme="light">Light</button>
+        <button class="theme-btn" data-theme="dark">Dark</button>
+      </div>
+      <div style="margin-top:8px"><label><input type="checkbox" id="liveToggle"> Ace: Live autocomplete</label></div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <label for="fontSize">Font: <span id="fontSizeValue">14</span>px</label>
+        <input id="fontSize" type="range" min="12" max="24" value="14">
+      </div>
+    </div>
+
+    <!-- Judge0 settings -->
+    <div id="judge0SettingsSection" style="padding-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong>Judge0 Settings</strong></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12px;color:var(--muted)">Judge0 への送信先は内部プロキシ経由で固定されています。</div>
+        <label>Fields (comma):
+          <input id="judge0Fields" type="text" placeholder="stdout,stderr" style="width:100%">
+        </label>
+        <label style="display:flex;gap:12px;align-items:center"><input id="judge0Base64" type="checkbox"> Send Base64 encoded request (base64_encoded=true)</label>
+        <label style="display:flex;gap:12px;align-items:center"><input id="judge0Wait" type="checkbox"> Wait for result (use ?wait=true)</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1">Auth header name: <input id="judge0AuthnHeader" type="text" placeholder="X-Auth-Token" style="width:100%"></label>
+          <label style="flex:1">Auth token: <input id="judge0AuthnToken" type="text" style="width:100%"></label>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="saveJudge0" class="tab-button">保存</button>
+        </div>
+      </div>
+    </div>
+      <!-- 追加: ARTS アイコン（セッティングの一番下） -->
+      <div style="display:flex;justify-content:center;margin-top:12px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.04)">
+        <img src="{{ url_for('static', filename='image/ARTS.png') }}" alt="ARTS icon" style="max-width:160px;max-height:80px;object-fit:contain;opacity:0.95">
+      </div>
+
+
+  </div>
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.16.0/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.16.0/ext-language_tools.js"></script>
+  <script>
+  // Enhanced client script:
+  // - preserve settings in localStorage (theme, font, live autocomplete, language)
+  // - use Ace editor UI as primary source of code
+  // - submit to demo Flask /api/submit and poll /api/result/<token>
+  var editor = null;
+  var LS_KEY = "ace_playground_settings_v1";
+  function saveSettings(obj){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(obj)); }catch(e){}
+  }
+  function loadSettings(){
+    try{ var s = localStorage.getItem(LS_KEY); return s ? JSON.parse(s) : {}; }catch(e){ return {}; }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var el = document.getElementById('editor');
+    if(el && window.ace){
+      editor = ace.edit(el);
+      editor.setTheme('ace/theme/github');
+      editor.session.setMode('ace/mode/python');
+      editor.setFontSize(14);
+      editor.setOptions({enableBasicAutocompletion:true, enableLiveAutocompletion:false, enableSnippets:false});
+
+      // Register a robust, always-available completer so autocomplete works
+      // across many languages (including Python3) even when built-in language
+      // workers/completers fail or differ between environments.
+      try{
+        var langTools = ace.require && ace.require("ace/ext/language_tools");
+        if(langTools){
+          // Common keyword lists for several popular languages.
+          var COMMON_KEYWORDS = {
+            common: [
+              "TODO","FIXME","console","log","assert","async","await"
+            ],
+            python: [
+              "def","class","import","from","as","if","elif","else","for","while","try","except","finally",
+              "with","lambda","yield","return","global","nonlocal","True","False","None","async","await","print"
+            ],
+            javascript: [
+              "function","const","let","var","if","else","for","while","switch","case","break","continue",
+              "return","async","await","class","new","this","console","log","import","from","export","default"
+            ],
+            java: [
+              "public","private","protected","class","interface","extends","implements","static","final",
+              "void","int","long","boolean","new","return","if","else","for","while","switch","case"
+            ],
+            c_cpp: [
+              "int","long","short","char","float","double","struct","union","typedef","enum","return","if","else","for","while","switch"
+            ],
+            csharp: [
+              "using","namespace","class","public","private","protected","static","void","int","string","new","return"
+            ],
+            ruby: [
+              "def","class","module","end","if","elsif","else","do","while","until","begin","rescue","ensure","yield","return"
+            ],
+            go: [
+              "package","import","func","var","const","type","struct","interface","return","go","defer","select","case"
+            ],
+            rust: [
+              "fn","let","mut","struct","enum","impl","trait","pub","use","crate","mod","unsafe","async","await","return"
+            ],
+            php: [
+              "function","class","public","private","protected","echo","return","if","else","foreach","namespace","use"
+            ],
+            lua: [
+              "function","local","if","then","else","elseif","end","for","in","while","do","return"
+            ],
+            html: [
+              "<!DOCTYPE>","html","head","body","div","span","script","style","link","meta","title"
+            ],
+            css: [
+              "color","background","display","position","flex","grid","margin","padding","border","font-size"
+            ],
+            sql: [
+              "SELECT","FROM","WHERE","INSERT","INTO","VALUES","UPDATE","SET","DELETE","JOIN","INNER","LEFT","RIGHT","ON","GROUP","BY","ORDER","LIMIT"
+            ]
+          };
+
+          function modeIdFromSession(session){
+            try{
+              var id = session.getMode && session.getMode().$id;
+              if(!id) return "";
+              // mode id like "ace/mode/python" -> return "python"
+              var parts = id.split('/');
+              return parts[parts.length-1] || "";
+            }catch(e){
+              return "";
+            }
+          }
+
+          // Generic completer: language keywords + buffered words (identifier-aware)
+          var genericCompleter = {
+            getCompletions: function(editorInstance, session, pos, prefix, callback){
+              try{
+                prefix = prefix || "";
+                if(prefix.length === 0){
+                  callback(null, []);
+                  return;
+                }
+                var mode = modeIdFromSession(session) || "common";
+                var kws = COMMON_KEYWORDS[mode] || COMMON_KEYWORDS["common"] || [];
+                var results = [];
+
+                // keywords that start with prefix (case-insensitive for many langs)
+                var lowPref = prefix.toLowerCase();
+                kws.forEach(function(w){
+                  if(String(w).toLowerCase().indexOf(lowPref) === 0){
+                    results.push({caption: w, value: w, meta: "keyword"});
+                  }
+                });
+
+                // also suggest identifiers found in the current document
+                var docWords = {};
+                var text = session.getValue ? session.getValue() : "";
+                var matches = text.match(/[A-Za-z_\\$][A-Za-z0-9_\\$]*/g) || [];
+                matches.forEach(function(w){
+                  if(w.length >= prefix.length && w.toLowerCase().indexOf(lowPref) === 0){
+                    docWords[w] = true;
+                  }
+                });
+                Object.keys(docWords).forEach(function(w){
+                  // avoid duplicates of keywords already added
+                  if(results.findIndex(function(r){ return r.value === w; }) === -1){
+                    results.push({caption: w, value: w, meta: "buffer"});
+                  }
+                });
+
+                callback(null, results);
+              }catch(err){
+                callback(err, []);
+              }
+            }
+          };
+
+          // Register completer once
+          langTools.addCompleter(genericCompleter);
+        }
+      }catch(e){
+        // If language_tools isn't available, do not crash the page.
+        console.warn("Ace language_tools not available or completer registration failed:", e);
+      }
+
+      window.editor = editor;
+    }
+
+    // restore settings
+    var settings = loadSettings();
+    var body = document.body;
+    var modeEl = document.getElementById('mode');
+    var liveToggle = document.getElementById('liveToggle');
+    var fontSize = document.getElementById('fontSize');
+    var fontSizeValue = document.getElementById('fontSizeValue');
+
+    // Polling and retry constants to avoid magic numbers.
+    // - POLL_INTERVAL_MS: interval between poll attempts in milliseconds.
+    // - POLL_MAX_ATTEMPTS: maximum number of poll attempts before timing out.
+    // If you need to change behavior, adjust these constants rather than editing loops.
+    var POLL_INTERVAL_MS = 1000;
+    var POLL_MAX_ATTEMPTS = 120;
+    var PANEL_WIDTH_MIN = 36;
+    var PANEL_WIDTH_MAX_RATIO = 0.7;
+
+    // Load available languages from Judge0 (via same-origin proxy) and populate the select.
+    // This function maps Judge0 language names to Ace editor modes.
+    // It aims to cover common Judge0 entries; when unknown, it falls back to plain text.
+    function guessAceModeFromJudge0Name(name){
+      var n = (name||'').toLowerCase();
+
+      // JavaScript / TypeScript family
+      if(n.indexOf('javascript')!==-1 || n.indexOf('node')!==-1 || n.indexOf('nodejs')!==-1 || n.indexOf('node.js')!==-1) return 'ace/mode/javascript';
+      if(n.indexOf('typescript')!==-1) return 'ace/mode/typescript';
+
+      // Python
+      if(n.indexOf('python')!==-1) return 'ace/mode/python';
+
+      // C / C++
+      if(n.indexOf('c++')!==-1 || n.indexOf('cpp')!==-1) return 'ace/mode/c_cpp';
+      if(n === 'c' || n.indexOf('c (')!==-1) return 'ace/mode/c_cpp'; // use c_cpp for both C and C++
+
+      // C# / Java / Kotlin
+      if(n.indexOf('c#')!==-1 || n.indexOf('csharp')!==-1) return 'ace/mode/csharp';
+      if(n.indexOf('java')!==-1) return 'ace/mode/java';
+      if(n.indexOf('kotlin')!==-1) return 'ace/mode/kotlin';
+
+      // Go
+      if(n.indexOf('go')!==-1 || n.indexOf('golang')!==-1) return 'ace/mode/golang';
+
+      // Web / markup
+      if(n.indexOf('html')!==-1 || n.indexOf('xml')!==-1) return 'ace/mode/html';
+      if(n.indexOf('css')!==-1) return 'ace/mode/css';
+
+      // Scripting / interpreted languages
+      if(n.indexOf('ruby')!==-1) return 'ace/mode/ruby';
+      if(n.indexOf('perl')!==-1) return 'ace/mode/perl';
+      if(n.indexOf('php')!==-1) return 'ace/mode/php';
+      if(n.indexOf('lua')!==-1) return 'ace/mode/lua';
+      if(n.indexOf('bash')!==-1 || n.indexOf('sh')!==-1 || n.indexOf('shell')!==-1) return 'ace/mode/sh';
+
+      // Functional / other languages
+      if(n.indexOf('rust')!==-1) return 'ace/mode/rust';
+      if(n.indexOf('swift')!==-1) return 'ace/mode/swift';
+      if(n.indexOf('scala')!==-1) return 'ace/mode/scala';
+      if(n.indexOf('haskell')!==-1) return 'ace/mode/haskell';
+      if(n.indexOf('ocaml')!==-1) return 'ace/mode/ocaml';
+
+      // Data / query languages
+      if(n.indexOf('sql')!==-1) return 'ace/mode/sql';
+
+      // Statistical / other
+      if(n === 'r' || n.indexOf('r (') !== -1) return 'ace/mode/r';
+      if(n.indexOf('fortran')!==-1) return 'ace/mode/fortran';
+
+      // Makefile / assembly / executable
+      if(n.indexOf('makefile')!==-1) return 'ace/mode/makefile';
+      if(n.indexOf('assembly')!==-1 || n.indexOf('asm')!==-1) return 'ace/mode/assembly';
+
+      // Fallback: plain text (safe)
+      return 'ace/mode/text';
+    }
+
+    async function loadJudge0Languages(){
+      if(!modeEl) return;
+      try{
+        var resp = await fetch('/api/proxy/languages');
+        if(!resp.ok) throw new Error('言語取得失敗: ' + resp.status);
+        var langs = await resp.json();
+        if(!Array.isArray(langs)) return;
+        langs.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+        // Clear and populate
+        modeEl.innerHTML = '';
+        langs.forEach(function(l){
+          var opt = document.createElement('option');
+          var idVal = l.id || l.language_id || '';
+          opt.value = idVal || l.language || l.name;
+          var namePart = (l.name || l.language || '');
+          var verPart = l.version ? ' ' + l.version : '';
+          opt.textContent = namePart + verPart + (idVal ? (' (' + idVal + ')') : '');
+          opt.dataset.aceMode = guessAceModeFromJudge0Name((l.name || l.language || ''));
+          modeEl.appendChild(opt);
+        });
+        // restore saved numeric selection if present
+        if(settings.mode){
+          try{ modeEl.value = settings.mode; }catch(e){}
+        }
+      }catch(e){
+        console.error('languages fetch failed', e);
+        // leave existing options intact
+      }
+    }
+
+    // trigger load (non-blocking)
+    loadJudge0Languages();
+
+    if(settings.theme === 'dark'){ 
+      body.classList.add('dark'); 
+      if(editor) editor.setTheme('ace/theme/monokai'); 
+    }
+    if(typeof settings.live !== 'undefined'){ 
+      if(liveToggle){ 
+        liveToggle.checked = !!settings.live; 
+        if(editor) editor.setOptions({enableLiveAutocompletion: !!settings.live}); 
+      } 
+    }
+    if(settings.font){ 
+      if(fontSize){ 
+        fontSize.value = settings.font; 
+        fontSizeValue.textContent = settings.font; 
+        if(editor) editor.setFontSize(parseInt(settings.font,10)||14); 
+      } 
+    }
+    if(settings.mode && modeEl){ 
+      modeEl.value = settings.mode; 
+      if(editor) editor.session.setMode(settings.mode); 
+    }
+
+    // persist setting changes
+    document.querySelectorAll('.theme-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var t = btn.getAttribute('data-theme');
+        if(t==='dark'){ 
+          body.classList.add('dark'); 
+          if(editor) editor.setTheme('ace/theme/monokai'); 
+        } else { 
+          body.classList.remove('dark'); 
+          if(editor) editor.setTheme('ace/theme/github'); 
+        }
+        settings.theme = t;
+        saveSettings(settings);
+      });
+    });
+    if(liveToggle) liveToggle.addEventListener('change', function(){
+      if(editor) editor.setOptions({enableLiveAutocompletion: !!this.checked});
+      settings.live = !!this.checked;
+      saveSettings(settings);
+    });
+    if(fontSize) fontSize.addEventListener('input', function(){
+      var s = parseInt(this.value,10)||14; 
+      fontSizeValue.textContent = s; 
+      if(editor) editor.setFontSize(s);
+      settings.font = s; 
+      saveSettings(settings);
+    });
+    if(modeEl) modeEl.addEventListener('change', function(){
+      // Use dataset.aceMode populated from /languages to set Ace mode; fallback to numeric/string value
+      var sel = this.options && this.options[this.selectedIndex];
+      var aceMode = sel && sel.dataset && sel.dataset.aceMode ? sel.dataset.aceMode : (isNaN(parseInt(this.value,10)) ? this.value : null);
+      if(editor && aceMode) editor.session.setMode(aceMode);
+      settings.mode = this.value; 
+      saveSettings(settings);
+    });
+
+    // helper: map editor mode -> judge0 language_id (sane defaults)
+    function modeToLangId(modeValue){
+      if(!modeValue) return 71; // default Python3
+      if(modeValue.indexOf('python') !== -1) return 71; // Python 3
+      if(modeValue.indexOf('c_cpp') !== -1) return 54; // C++ (fallback)
+      if(modeValue.indexOf('javascript') !== -1) return 63; // JavaScript (nodejs)
+      if(modeValue.indexOf('html') !== -1) return 23; // HTML
+      return 71;
+    }
+
+    // Run button: submit current editor content and stdin.
+    // Prefer Judge0 settings saved in localStorage; fallback to demo on :5000.
+    var runBtn = document.getElementById('runBtn');
+    if(runBtn){
+      runBtn.addEventListener('click', async function(e){
+        e.preventDefault();
+        if(!editor) return;
+        var src = editor.getValue();
+        var stdin = document.getElementById('stdin').value || "";
+        var stdoutEl = document.getElementById('stdout');
+        stdoutEl.value = "送信中…";
+        runBtn.disabled = true;
+        var prevText = runBtn.textContent;
+        runBtn.textContent = "送信中…";
+
+        // Load saved Judge0 settings (if any) and decide whether to apply them.
+        var s = loadJudge0Settings();
+        // useSettings when user configured any Judge0 preferences (base64, wait, fields, auth)
+        var useSettings = s && (s.base64 || s.wait || (s.fields && s.fields.trim()) || (s.authnHeader && s.authnToken));
+
+        var languageId = (function(){
+          var v = document.getElementById('mode').value;
+          if(v && !isNaN(parseInt(v,10))) return parseInt(v,10);
+          return modeToLangId(v);
+        })();
+
+        try{
+          var res;
+          if(useSettings){
+            // Build payload honoring saved settings (encode when requested).
+            var pl = {
+              language_id: languageId,
+              source_code: s.base64 ? b64enc(src) : src,
+              stdin: s.base64 ? b64enc(stdin) : stdin
+            };
+            if(s.fields) pl.fields = s.fields;
+            if(s.wait) pl.wait = true;
+            if(s.base64) pl.base64EncodedRequest = true;
+            if(s.authnHeader && s.authnToken){
+              pl.authnHeader = s.authnHeader;
+              pl.authnToken = s.authnToken;
+            }
+            // submit via same-origin proxy endpoint (submitToJudge0WithSettings uses /api/proxy/submit)
+            res = await submitToJudge0WithSettings(pl, s);
+          } else {
+            // Fallback: use same-origin proxy to avoid CORS (proxy implemented in web service)
+            var payload = {
+              language_id: languageId,
+              source_code: src,
+              stdin: stdin
+            };
+            var resp = await fetch('/api/proxy/submit', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(payload)
+            });
+            if(!resp.ok){ var txt = await resp.text().catch(()=>''); throw new Error('送信失敗: ' + resp.status + ' ' + txt); }
+            res = await resp.json();
+          }
+
+          // Handle immediate final result or token + polling
+          var token = res && (res.token || (res.result && res.result.token));
+          if(res && res.done && res.result){
+            var r = res.result || res;
+            stdoutEl.value = decodeResultForSettings(r, s);
+          } else if(token){
+            stdoutEl.value = 'トークン: ' + token + '\nポーリング中...';
+            // Poll via same-origin proxy
+            var pollUrl = '/api/proxy/result/' + encodeURIComponent(token);
+            var result = null;
+            for(var i=0;i<POLL_MAX_ATTEMPTS;i++){
+              try{
+                var r2 = await fetch(pollUrl);
+                if(r2.ok){
+                  var rj = await r2.json();
+                  if(rj.error){ stdoutEl.value = 'ポーリングエラー: ' + rj.error; }
+                  var done = rj.done !== undefined ? rj.done : (rj.status && rj.status.id && rj.status.id > 2);
+                  var resultObj = rj.result || rj;
+                  if(done){
+                    result = resultObj;
+                    break;
+                  } else {
+                    stdoutEl.value = '処理中: ' + (resultObj.status && resultObj.status.description ? resultObj.status.description : '実行中...');
+                  }
+                } else {
+                  stdoutEl.value = 'ポーリング失敗: ' + r2.status;
+                }
+              }catch(pe){
+                stdoutEl.value = 'ポーリング例外: ' + pe.message;
+              }
+              await new Promise(resv=>setTimeout(resv,POLL_INTERVAL_MS));
+            }
+            if(result){
+              stdoutEl.value = decodeResultForSettings(result, s);
+            } else {
+              stdoutEl.value = 'タイムアウト: 結果取得できず';
+            }
+          } else {
+            stdoutEl.value = JSON.stringify(res);
+          }
+        }catch(err){
+          stdoutEl.value = "実行エラー: " + (err && err.message ? err.message : String(err)) + "\n\nブラウザの Network/Console を確認してください（CORS など）。";
+        } finally {
+          runBtn.disabled = false;
+          runBtn.textContent = prevText || '実行';
+          if(editor && editor.resize) setTimeout(function(){ editor.resize(); }, 60);
+        }
+      });
+    }
+
+    // Add Ctrl+Enter shortcut to trigger the Run button from editor or textareas.
+    // We avoid using F5 because it reloads the page. Ctrl+Enter on Windows/Linux and
+    // Command+Enter on macOS are supported for Ace and plain textareas/inputs.
+    (function(){
+      function triggerRun(){
+        try{
+          if(window.runBtn && !window.runBtn.disabled){
+            // use click to preserve existing handler behavior
+            window.runBtn.click();
+          }
+        }catch(e){}
+      }
+
+      // Register as an Ace command so it works when Ace has focus.
+      try{
+        if(window.editor && window.editor.commands && window.ace){
+          window.editor.commands.addCommand({
+            name: "runShortcut",
+            bindKey: {win: "Ctrl-Enter", mac: "Command-Enter"},
+            exec: function() { triggerRun(); },
+            readOnly: true
+          });
+        }
+      }catch(e){
+        console.warn("Failed to register Ace run shortcut:", e);
+      }
+
+      // Also listen for keydown on document so plain textareas / inputs work.
+      document.addEventListener('keydown', function(e){
+        var isCtrlOrMeta = e.ctrlKey || e.metaKey;
+        if(!isCtrlOrMeta) return;
+        // Normalize key for older browsers where key might be "Enter" or "Return"
+        var k = e.key || e.keyIdentifier || '';
+        if(k === 'Enter' || k === 'Return' || k === '\n' || k === 13 || e.code === 'Enter'){
+          // If focus is in a textarea, input, or Ace editor, trigger run.
+          var active = document.activeElement;
+          var inTextarea = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
+          var inAce = active && (active.classList && (active.classList.contains('ace_text-input') || active.id === 'editor'));
+          if(inTextarea || inAce){
+            e.preventDefault();
+            triggerRun();
+          }
+        }
+      }, false);
+    })();
+
+    // Keep existing UI behaviors (resizers, collapse, etc.) intact by reusing original handlers.
+
+    // Judge0 modal + quick-send handlers (consolidated into Settings modal)
+    var settingsBtn = document.getElementById('settingsBtn');
+    var settingsModal = document.getElementById('settingsModal');
+    var modalOverlay = document.getElementById('modalOverlay');
+    var closeSettings = document.getElementById('closeSettings');
+    var saveJudge0 = document.getElementById('saveJudge0');
+
+    var JUDGE0_LS = 'judge0_settings_v1';
+    function loadJudge0Settings(){
+      try{ var s = localStorage.getItem(JUDGE0_LS); return s ? JSON.parse(s) : {}; }catch(e){ return {}; }
+    }
+    function saveJudge0Settings(obj){
+      try{ localStorage.setItem(JUDGE0_LS, JSON.stringify(obj)); }catch(e){}
+    }
+
+    function populateJudge0Form(){
+      var s = loadJudge0Settings();
+      document.getElementById('judge0Fields').value = s.fields || 'stdout,stderr';
+      document.getElementById('judge0Base64').checked = !!s.base64;
+      document.getElementById('judge0Wait').checked = !!s.wait;
+      document.getElementById('judge0AuthnHeader').value = s.authnHeader || 'X-Auth-Token';
+      document.getElementById('judge0AuthnToken').value = s.authnToken || '';
+    }
+
+    if(settingsBtn) settingsBtn.addEventListener('click', function(){ populateJudge0Form(); settingsModal.style.display='block'; modalOverlay.style.display='block'; });
+    if(closeSettings) closeSettings.addEventListener('click', function(){ settingsModal.style.display='none'; modalOverlay.style.display='none'; });
+    if(modalOverlay) modalOverlay.addEventListener('click', function(){ settingsModal.style.display='none'; modalOverlay.style.display='none'; });
+
+    if(saveJudge0){
+      saveJudge0.addEventListener('click', function(){
+        var s = {
+          fields: document.getElementById('judge0Fields').value.trim(),
+          base64: !!document.getElementById('judge0Base64').checked,
+          wait: !!document.getElementById('judge0Wait').checked,
+          authnHeader: document.getElementById('judge0AuthnHeader').value.trim(),
+          authnToken: document.getElementById('judge0AuthnToken').value.trim()
+        };
+        saveJudge0Settings(s);
+        settingsModal.style.display='none'; modalOverlay.style.display='none';
+      });
+    }
+
+    // helper: safe base64 (utf8) + decoder and result normalizer
+    function b64enc(str){
+      try{ return btoa(unescape(encodeURIComponent(str||''))); }catch(e){ return btoa(str||''); }
+    }
+    function b64dec(str){
+      if(!str) return '';
+      try { return decodeURIComponent(escape(atob(str))); } catch(e){
+        try { return atob(str); } catch(e2) { return str; }
+      }
+    }
+    function isLikelyBase64(s){
+      if(!s) return false;
+      var t = String(s).trim().replace(/\s+/g,'');
+      if(t.length === 0) return false;
+      if(t.length % 4 !== 0) return false;
+      return /^[A-Za-z0-9+\/=]+$/.test(t);
+    }
+    function decodeResultForSettings(result, settings){
+      // Prefer server-provided decoded fields when present.
+      var stdout = result && result.decoded_stdout !== undefined ? result.decoded_stdout : (result ? result.stdout : '');
+      var stderr = result && result.decoded_stderr !== undefined ? result.decoded_stderr : (result ? result.stderr : '');
+      var compile = result && result.decoded_compile_output !== undefined ? result.decoded_compile_output : (result ? result.compile_output : '');
+      // If the user requested base64 encoding OR the fields look like Base64, decode them.
+      if(settings && settings.base64){
+        if(stdout) try{ stdout = b64dec(stdout); }catch(e){}
+        if(stderr) try{ stderr = b64dec(stderr); }catch(e){}
+        if(compile) try{ compile = b64dec(compile); }catch(e){}
+      } else {
+        // Auto-detect base64-like fields and decode to improve readability.
+        if(stdout && isLikelyBase64(stdout)) { try{ stdout = b64dec(stdout); }catch(e){} }
+        if(stderr && isLikelyBase64(stderr)) { try{ stderr = b64dec(stderr); }catch(e){} }
+        if(compile && isLikelyBase64(compile)) { try{ compile = b64dec(compile); }catch(e){} }
+      }
+      var out = stdout || '';
+      if(compile){
+        out = (compile || '') + (out ? ("\n\n" + out) : '');
+      }
+      if(stderr){
+        out += (out ? "\n\n" : "") + "stderr:\n" + stderr;
+      }
+      if(!out) out = "[空の出力]";
+      return out;
+    }
+
+    async function submitToJudge0WithSettings(payload, settings){
+      // Use same-origin proxy implemented in web service to avoid CORS and fixed URL exposure.
+      var url = '/api/proxy/submit';
+      var resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      if(!resp.ok){
+        var text = await resp.text().catch(()=>'');
+        throw new Error('送信失敗: ' + resp.status + ' ' + text);
+      }
+      return await resp.json();
+    }
+
+
+    // Column resizers
+    function makeResizer(resizer, panel, invert){
+      if(!resizer || !panel) return;
+      var dragging=false, startX=0, startWidth=0;
+      resizer.addEventListener('mousedown', function(e){ 
+        dragging=true; 
+        startX=e.clientX; 
+        startWidth=panel.getBoundingClientRect().width; 
+        document.body.style.cursor='col-resize'; 
+        document.body.style.userSelect='none'; 
+      });
+      window.addEventListener('mousemove', function(e){ 
+        if(!dragging) return; 
+        var dx=e.clientX-startX; 
+        var newW=startWidth+(invert?-dx:dx); 
+        newW=Math.max(PANEL_WIDTH_MIN,Math.min(window.innerWidth*PANEL_WIDTH_MAX_RATIO,newW)); 
+        panel.style.flex='0 0 '+newW+'px'; 
+        if(editor && editor.resize) setTimeout(function(){editor.resize();},0); 
+      });
+      window.addEventListener('mouseup', function(){ 
+        if(dragging){ 
+          dragging=false; 
+          document.body.style.cursor=''; 
+          document.body.style.userSelect='auto'; 
+        }
+      });
+    }
+    makeResizer(document.getElementById('resizer'), document.getElementById('leftPanel'), false);
+    makeResizer(document.getElementById('resizer2'), document.getElementById('rightPanel'), true);
+
+    // IO vertical resizer (preserve behavior)
+    (function(){
+      var ioResizer=document.getElementById('ioResizer');
+      var input=document.getElementById('inputSection');
+      var output=document.getElementById('outputSection');
+      if(!ioResizer || !input || !output) return;
+      var dragging=false, startY=0, startH=0;
+      ioResizer.addEventListener('mousedown', function(e){
+        // リサイザーが pinned クラスを持っている場合はドラッグを無効化
+        if(ioResizer.classList.contains('pinned')) return;
+        // Outputが最小化されている場合もドラッグを無効化
+        if(output.classList.contains('io-collapsed')) return;
+        var rightPanel = document.getElementById('rightPanel');
+        if(rightPanel && rightPanel.classList.contains('left-collapsed')) return;
+        dragging=true;
+        startY=e.clientY;
+        startH=input.getBoundingClientRect().height;
+        document.body.style.cursor='row-resize';
+        document.body.style.userSelect='none';
+      });
+      window.addEventListener('mousemove', function(e){ 
+        if(!dragging) return; 
+        var dy=e.clientY-startY; 
+        var newH=startH+dy; 
+        var min=48, max=window.innerHeight*0.7; 
+        newH=Math.max(min,Math.min(max,newH)); 
+        input.style.flex='0 0 '+newH+'px'; 
+        output.style.flex='1'; 
+      });
+      window.addEventListener('mouseup', function(){ 
+        if(dragging){ 
+          dragging=false; 
+          document.body.style.cursor=''; 
+          document.body.style.userSelect='auto'; 
+        }
+      });
+    })();
+
+    // パネル最小化・復元ハンドラー (Problem/IOパネル全体の制御)
+    document.querySelectorAll('.minimize').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var tid = btn.getAttribute('data-target');
+        var panel = document.getElementById(tid);
+        if(!panel) return;
+        
+        // パネルの最小化状態をトグル
+        var collapsed = panel.classList.toggle('left-collapsed');
+        btn.textContent = collapsed ? '+' : '−';
+        
+        if(collapsed){
+          // === パネル最小化 ===
+          panel.dataset._origFlex = panel.style.flex || '';
+          var pc = panel.querySelector(':scope > .panel-content');
+          if(pc) pc.style.display='none';
+          
+          // IOパネルの場合: InputとOutputも最小化してボタンを非表示
+          if(tid === 'rightPanel'){
+            ['inputSection','outputSection'].forEach(function(sectionId){
+              var section = panel.querySelector('#'+sectionId);
+              if(!section) return;
+              var innerBtn = section.querySelector('.io-minimize');
+              if(innerBtn){
+                // セクションが展開されていたら最小化
+                if(!section.classList.contains('io-collapsed')) innerBtn.click();
+                innerBtn.style.display = 'none';
+              }
+            });
+          }
+        } else {
+          // === パネル復元 ===
+          panel.style.flex = panel.dataset._origFlex || '';
+          var pc2 = panel.querySelector(':scope > .panel-content');
+          if(pc2) pc2.style.display='';
+          
+          // IOパネルの場合: InputとOutputを展開状態で完全復元
+          if(tid === 'rightPanel'){
+            var inputSec = panel.querySelector('#inputSection');
+            var outputSec = panel.querySelector('#outputSection');
+            var ioResizer = document.getElementById('ioResizer');
+            var rightContainer = panel.querySelector('.io-container');
+            
+            // まず、Outputのピン留め状態を完全解除
+            if(outputSec){
+              // 保存されたスタイルから復元
+              var origStyle = outputSec.getAttribute('data-orig-style');
+              if(origStyle !== null){
+                outputSec.setAttribute('style', origStyle);
+                outputSec.removeAttribute('data-orig-style');
+              }
+              
+              // io-collapsedクラスを削除
+              outputSec.classList.remove('io-collapsed');
+              
+              // コンテンツを表示
+              var outContent = outputSec.querySelector('.panel-content');
+              if(outContent) outContent.style.display = '';
+              var outTextarea = outputSec.querySelector('textarea');
+              if(outTextarea) outTextarea.style.display = '';
+              
+              // 拡張タブを削除
+              var tab = outputSec.querySelector('.output-expand-tab');
+              if(tab) tab.remove();
+            }
+            
+            // Inputセクションも復元
+            if(inputSec){
+              var origInputStyle = inputSec.getAttribute('data-orig-style-input');
+              if(origInputStyle !== null){
+                inputSec.setAttribute('style', origInputStyle);
+                inputSec.removeAttribute('data-orig-style-input');
+              }
+              
+              // io-collapsedクラスを削除
+              inputSec.classList.remove('io-collapsed');
+              
+              // コンテンツを表示
+              var inContent = inputSec.querySelector('.panel-content');
+              if(inContent) inContent.style.display = '';
+              var inTextarea = inputSec.querySelector('textarea');
+              if(inTextarea) inTextarea.style.display = '';
+            }
+            
+            // リサイザーを復元
+            if(ioResizer){
+              ioResizer.classList.remove('pinned');
+              var origResizerStyle = ioResizer.getAttribute('data-orig-style');
+              if(origResizerStyle !== null){
+                ioResizer.setAttribute('style', origResizerStyle);
+                ioResizer.removeAttribute('data-orig-style');
+              }
+            }
+            
+            // コンテナを復元
+            if(rightContainer){
+              var origContainerStyle = rightContainer.getAttribute('data-orig-style-container');
+              if(origContainerStyle !== null){
+                rightContainer.setAttribute('style', origContainerStyle);
+                rightContainer.removeAttribute('data-orig-style-container');
+              }
+            }
+            
+            // ボタンを表示して適切なラベルを設定
+            ['inputSection','outputSection'].forEach(function(sectionId){
+              var section = panel.querySelector('#'+sectionId);
+              if(!section) return;
+              var innerBtn = section.querySelector('.io-minimize');
+              if(innerBtn){
+                innerBtn.style.display = '';
+                innerBtn.textContent = '−'; // 展開状態なので「−」
+              }
+            });
+          }
+        }
+        
+        // エディターサイズを再調整
+        if(editor && editor.resize) setTimeout(function(){editor.resize();},120);
+      });
+    });
+
+    // IO minimize toggle (Input/Outputの個別最小化・復元)
+    document.querySelectorAll('.io-minimize').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var tid = btn.getAttribute('data-target');
+        var sec = document.getElementById(tid);
+        if(!sec) return;
+        
+        // トグル状態を切り替え
+        var collapsed = sec.classList.toggle('io-collapsed');
+        btn.textContent = collapsed ? '+' : '−';
+        
+        // 必要な要素を取得
+        var inputSec = document.getElementById('inputSection');
+        var outputSec = document.getElementById('outputSection');
+        var ioResizer = document.getElementById('ioResizer');
+        var rightContainer = document.querySelector('.io-container');
+        
+        // コンテンツの表示/非表示を切り替え
+        var pc = sec.querySelector('.panel-content');
+        if(pc) pc.style.display = collapsed ? 'none' : '';
+        sec.querySelectorAll('textarea').forEach(function(t){
+          t.style.display = collapsed ? 'none' : '';
+        });
+  
+        // 特別処理: Outputセクションの最小化時は下部にピン留め
+        if(tid === 'outputSection'){
+          if(collapsed){
+            // === Output最小化: 下部にピン留め ===
+            
+            // 元のスタイルを保存（初回のみ）
+            if(!outputSec.hasAttribute('data-orig-style')){
+              outputSec.setAttribute('data-orig-style', outputSec.getAttribute('style')||'');
+            }
+            if(ioResizer && !ioResizer.hasAttribute('data-orig-style')){
+              ioResizer.setAttribute('data-orig-style', ioResizer.getAttribute('style')||'');
+            }
+            if(inputSec && !inputSec.hasAttribute('data-orig-style-input')){
+              inputSec.setAttribute('data-orig-style-input', inputSec.getAttribute('style')||'');
+            }
+            if(rightContainer && !rightContainer.hasAttribute('data-orig-style-container')){
+              rightContainer.setAttribute('data-orig-style-container', rightContainer.getAttribute('style')||'');
+            }
+            
+            // Outputを画面下部に絶対配置
+            outputSec.style.position = 'absolute';
+            outputSec.style.left = '0';
+            outputSec.style.right = '0';
+            outputSec.style.bottom = '0';
+            outputSec.style.width = '100%';
+            outputSec.style.zIndex = '120';
+            outputSec.style.minHeight = '36px';
+            outputSec.style.height = '36px';
+            
+            // リサイザーをOutput上部に配置（ドラッグ無効化）
+            if(ioResizer){
+              ioResizer.classList.add('pinned');
+              ioResizer.style.display = 'block';
+            }
+            
+            // Inputセクションを拡張（下部スペース確保）
+            if(inputSec){
+              inputSec.style.flex = '1 1 auto';
+              inputSec.style.paddingBottom = '50px';
+              inputSec.style.display = 'flex';
+              inputSec.style.flexDirection = 'column';
+            }
+            
+            // 親コンテナをrelativeに設定
+            if(rightContainer){
+              rightContainer.style.position = 'relative';
+              rightContainer.style.overflow = 'visible';
+            }
+          } else {
+            // === Output復元: 通常のflexレイアウトに戻す ===
+            
+            // io-collapsedクラスを削除（重要）
+            outputSec.classList.remove('io-collapsed');
+            
+            // Output スタイルを完全に復元
+            var origOutput = outputSec.getAttribute('data-orig-style');
+            if(origOutput !== null && origOutput !== ''){
+              outputSec.setAttribute('style', origOutput);
+              outputSec.removeAttribute('data-orig-style');
+            } else {
+              // 保存がない場合はデフォルトスタイルを設定
+              outputSec.removeAttribute('style');
+              // HTMLで定義されているデフォルトスタイルを再適用
+              outputSec.setAttribute('style', 'flex:1;display:flex;flex-direction:column;position:relative;min-height:0;');
+            }
+            
+            // コンテンツとテキストエリアを表示
+            var outContent = outputSec.querySelector('.panel-content');
+            if(outContent) outContent.style.display = '';
+            var outTextarea = outputSec.querySelector('textarea');
+            if(outTextarea) outTextarea.style.display = '';
+            
+            // リサイザーを通常位置に復元
+            if(ioResizer){
+              ioResizer.classList.remove('pinned');
+              var origResizer = ioResizer.getAttribute('data-orig-style');
+              if(origResizer !== null && origResizer !== ''){
+                ioResizer.setAttribute('style', origResizer);
+                ioResizer.removeAttribute('data-orig-style');
+              } else {
+                // デフォルトに戻す（inline styleをクリア）
+                ioResizer.removeAttribute('style');
+              }
+            }
+            
+            // Input セクションを復元
+            if(inputSec){
+              var origInput = inputSec.getAttribute('data-orig-style-input');
+              if(origInput !== null && origInput !== ''){
+                inputSec.setAttribute('style', origInput);
+                inputSec.removeAttribute('data-orig-style-input');
+              } else {
+                // paddingBottomなど追加したスタイルをクリア
+                inputSec.style.paddingBottom = '';
+                inputSec.style.flex = '';
+              }
+            }
+            
+            // 親コンテナを復元
+            if(rightContainer){
+              var origContainer = rightContainer.getAttribute('data-orig-style-container');
+              if(origContainer !== null && origContainer !== ''){
+                rightContainer.setAttribute('style', origContainer);
+                rightContainer.removeAttribute('data-orig-style-container');
+              } else {
+                rightContainer.style.position = '';
+                rightContainer.style.overflow = '';
+              }
+            }
+            
+            // 拡張タブを削除
+            var tab = outputSec.querySelector('.output-expand-tab');
+            if(tab) tab.remove();
+            
+            // ボタンを確実に表示
+            btn.style.display = '';
+            btn.textContent = '−';
+          }
+        }
+
+        // InputとOutputが両方最小化されたら、IOパネル全体を最小化
+        if(inputSec && outputSec && 
+           inputSec.classList.contains('io-collapsed') && 
+           outputSec.classList.contains('io-collapsed')){
+          var rightPanel = document.getElementById('rightPanel');
+          if(rightPanel && !rightPanel.classList.contains('left-collapsed')){
+            var rpBtn = document.querySelector('.minimize[data-target="rightPanel"]');
+            if(rpBtn) rpBtn.click();
+          }
+        }
+        
+        // エディターサイズを再調整
+        if(editor && editor.resize) setTimeout(function(){ editor.resize(); },120);
+      });
+    });
+
+  }); // DOMContentLoaded
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Status {{ token }}</title>
+  <style>body{font-family:Arial;margin:20px}pre{background:#f7f7f7;padding:10px;border-radius:4px}</style>
+</head>
+<body>
+  <h1>Submission {{ token }}</h1>
+  <p>
+    Status:
+    {% if meta.error %}
+      <strong style="color:red">Error: {{ meta.error }}</strong>
+    {% else %}
+      {% if meta.done %}
+        <strong>Finished</strong>
+      {% else %}
+        In progress
+      {% endif %}
+    {% endif %}
+  </p>
+
+  {% if meta.result %}
+    <h2>Result (raw JSON)</h2>
+    <pre>{{ meta.result | tojson(indent=2) }}</pre>
+    <h3>Decoded stdout / stderr</h3>
+    <pre>stdout:
+{% if meta.result.stdout %}{{ meta.result.stdout }}{% else %}(empty){% endif %}
+
+stderr:
+{% if meta.result.stderr %}{{ meta.result.stderr }}{% else %}(empty){% endif %}
+    </pre>
+  {% endif %}
+
+  <p><a href="{{ url_for('index') }}">Back</a></p>
+</body>
+</html>

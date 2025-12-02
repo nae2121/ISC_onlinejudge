@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Judge0 フルオプション クライアント</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; }
+    textarea { font-family: monospace; width: 100%; }
+    label { display: block; margin: 8px 0; }
+    .row { display:flex; gap:12px; align-items:center; }
+    .half { width:48%; }
+    .panel { position: fixed; bottom: 16px; right: 16px; background:#0f0; padding:12px; border:1px solid #666; }
+    input[type="text"], input[type="number"], select { width: 100%; }
+    .small { width: 180px; display:inline-block; }
+  </style>
+</head>
+<body>
+  <h1>Judge0 — 全オプション送信フォーム</h1>
+
+  <form action="{{ url_for('submit_form') }}" method="post">
+    <div class="row">
+      <div class="half">
+        <label>Language ID:
+          <input name="language_id" value="71" required>
+        </label>
+        <label>Source code:
+          <textarea name="source_code" rows="12">print(input())</textarea>
+        </label>
+        <label>Source code is null: <input type="checkbox" name="sourceCodeIsNull"></label>
+
+        <label>Stdin:
+          <textarea name="stdin" rows="3"></textarea>
+        </label>
+        <label>Stdin is null: <input type="checkbox" name="stdinIsNull"></label>
+
+        <label>Expected Output:
+          <textarea name="expectedOutput" rows="3"></textarea>
+        </label>
+        <label>Expected Output is null: <input type="checkbox" name="expectedOutputIsNull" checked></label>
+      </div>
+
+      <div class="half">
+        <label>Number Of Runs: <input name="numberOfRuns" value="1" class="small"></label>
+        <label>CPU Time Limit: <input name="cpuTimeLimit" value="5" class="small"></label>
+        <label>CPU Extra Time: <input name="cpuExtraTime" value="1" class="small"></label>
+        <label>Wall Time Limit: <input name="wallTimeLimit" value="10" class="small"></label>
+        <label>Memory Limit (KB): <input name="memoryLimit" value="128000" class="small"></label>
+        <label>Stack Limit (KB): <input name="stackLimit" value="64000" class="small"></label>
+        <label>Max Processes/Threads: <input name="maxProcessesAndOrThreads" value="60" class="small"></label>
+        <label>Max File Size (KB): <input name="maxFileSize" value="1024" class="small"></label>
+
+        <label>Enable Per Process/Thread Time Limit:
+          <select name="enablePerProcessAndThreadTimeLimit">
+            <option value="null" selected>null</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </label>
+
+        <label>Enable Per Process/Thread Memory Limit:
+          <select name="enablePerProcessAndThreadMemoryLimit">
+            <option value="null" selected>null</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </label>
+
+        <label>Enable Network:
+          <select name="enableNetwork">
+            <option value="null" selected>null</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <hr>
+
+    <label>Fields (comma-separated, forwarded as ?fields=...): <input name="fields" placeholder="stdout,stderr"></label>
+
+    <h3>Auth / Headers (Dummy Client はクエリに載せます)</h3>
+    <label>Authentication Header Name: <input name="authnHeader" value="X-Auth-Token"></label>
+    <label>Authentication Token: <input name="authnToken"></label>
+    <label>Authorization Header Name: <input name="authzHeader" value="X-Auth-User"></label>
+    <label>Authorization Token: <input name="authzToken"></label>
+
+    <label><input type="checkbox" name="waitResponse"> Wait for submission (send ?wait=true)</label>
+    <label><input type="checkbox" name="base64EncodedRequest"> Send request with Base64 encoded data</label>
+    <label><input type="checkbox" name="base64EncodedResponse"> Accept response with Base64 encoded data</label>
+
+    <br>
+    <button type="submit">送信</button>
+  </form>
+
+  <div class="panel" id="panel">
+    <button id="back">Back to top</button>
+  </div>
+
+  <h2>Recent submissions</h2>
+  <ul>
+  {% for t, meta in recent %}
+    <li><a href="{{ url_for('status_page', token=t) }}">{{ t }}</a> - {% if meta.done %}finished{% else %}in-progress{% endif %} (updated {{ meta.updated | round(1) }}s ago)</li>
+  {% endfor %}
+  </ul>
+
+  <p>API: POST /api/submit (json: language_id, source_code, stdin, plus optional fields) → returns token</p>
+  <p>API: GET /api/result/<token> → JSON result (decoded stdout/stderr when available)</p>
+
+  <script>
+    document.getElementById('back').addEventListener('click', function(){ window.scrollTo({top:0,behavior:'smooth'}); });
+  </script>
+</body>
+</html>
