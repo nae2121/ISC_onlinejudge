@@ -2,6 +2,11 @@ node_modules
 .next
 *.tsbuildinfo
 static/
+!public/static/
+public/static/*
+!public/static/image/
+public/static/image/*
+!public/static/image/WfJlogo.png
 templates/
 out
 dist

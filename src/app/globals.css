@@ -363,9 +363,9 @@ button {
 }
 
 .modalFooter img {
-  width: auto;
-  max-width: 136px;
-  max-height: 58px;
+  width: 150px;
+  height: 150px;
+  border-radius:50%;
   object-fit: contain;
 }
 

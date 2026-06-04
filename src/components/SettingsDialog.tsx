@@ -149,7 +149,7 @@ export function SettingsDialog({
         </div>
 
         <div className="modalFooter">
-          <img alt="ARTS" src="/static/image/ARTS.png" />
+          <img alt="WfJ" src="/static/image/WfJlogo.png" />
           <button className="primaryButton" type="button" onClick={() => onSave(draft)}>
             保存
           </button>
