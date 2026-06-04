@@ -69,14 +69,29 @@ const APP_SETTINGS_KEY = "ace_playground_settings_v1";
 const JUDGE_SETTINGS_KEY = "judge0_settings_v1";
 const POLL_INTERVAL_MS = 1_000;
 const POLL_MAX_ATTEMPTS = 120;
+const REQUIRED_RESULT_FIELDS = [
+  "stdout",
+  "stderr",
+  "compile_output",
+  "status",
+  "message"
+];
+const DEFAULT_RESULT_FIELDS = REQUIRED_RESULT_FIELDS.join(",");
 const MIN_PANEL_WIDTH = 48;
 const DEFAULT_LEFT_WIDTH = 288;
 const DEFAULT_RIGHT_WIDTH = 332;
 const DEFAULT_INPUT_HEIGHT = 220;
 
-const DEFAULT_SOURCE = `# Python 3
-name = input()
-print(name)
+const DEFAULT_SOURCE = `
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  cout << n << "Hello world" << endl;
+  return 0;
+}
 `;
 
 const PROBLEM_TEXT = `標準入力から1行を受け取り、そのまま標準出力へ表示してください。
@@ -278,7 +293,35 @@ function safeDecode(value?: string, force = false) {
   }
 }
 
+function normalizeJudgeFields(fields?: string) {
+  const trimmed = fields?.trim();
+  if (trimmed === "*") {
+    return trimmed;
+  }
+
+  const values = new Set(
+    (trimmed ? trimmed.split(",") : [])
+      .map((field) => field.trim())
+      .filter(Boolean)
+  );
+
+  REQUIRED_RESULT_FIELDS.forEach((field) => values.add(field));
+  return [...values].join(",");
+}
+
 function decodeResultForDisplay(result: Record<string, unknown>, settings: JudgeSettings) {
+  const status =
+    result.status && typeof result.status === "object" && !Array.isArray(result.status)
+      ? (result.status as Record<string, unknown>)
+      : {};
+  const statusDescription =
+    typeof status.description === "string" ? status.description : "";
+  const message =
+    typeof result.decoded_message === "string"
+      ? result.decoded_message
+      : typeof result.message === "string"
+        ? result.message
+        : "";
   const stdout =
     typeof result.decoded_stdout === "string"
       ? result.decoded_stdout
@@ -299,9 +342,16 @@ function decodeResultForDisplay(result: Record<string, unknown>, settings: Judge
         : "";
 
   const forceDecode = !!settings.base64;
+  const decodedCompile = safeDecode(compile, forceDecode);
+  const decodedStdout = safeDecode(stdout, forceDecode);
+  const decodedMessage = safeDecode(message, forceDecode);
   const parts = [
-    safeDecode(compile, forceDecode),
-    safeDecode(stdout, forceDecode)
+    statusDescription && statusDescription !== "Accepted"
+      ? `status: ${statusDescription}`
+      : "",
+    decodedMessage ? `message:\n${decodedMessage}` : "",
+    decodedCompile ? `compile_output:\n${decodedCompile}` : "",
+    decodedStdout
   ].filter(Boolean);
   const decodedStderr = safeDecode(stderr, forceDecode);
 
@@ -367,7 +417,7 @@ export function JudgeWorkbench() {
     authnHeader: "X-Auth-Token",
     authnToken: "",
     base64: false,
-    fields: "stdout,stderr",
+    fields: DEFAULT_RESULT_FIELDS,
     wait: false
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -397,7 +447,7 @@ export function JudgeWorkbench() {
       authnHeader: "X-Auth-Token",
       authnToken: "",
       base64: false,
-      fields: "stdout,stderr",
+      fields: DEFAULT_RESULT_FIELDS,
       wait: false
     });
 
@@ -561,10 +611,11 @@ export function JudgeWorkbench() {
     const resolvedLanguageId = Number.isFinite(parsedLanguageId)
       ? parsedLanguageId
       : modeToLanguageId(selected);
+    const normalizedFields = normalizeJudgeFields(judgeSettings.fields);
     const useSettings =
       judgeSettings.base64 ||
       judgeSettings.wait ||
-      !!judgeSettings.fields?.trim() ||
+      !!normalizedFields ||
       !!(judgeSettings.authnHeader && judgeSettings.authnToken);
 
     const payload: Record<string, unknown> = {
@@ -579,7 +630,7 @@ export function JudgeWorkbench() {
         payload.stdin = encodeBase64(stdin);
         payload.base64EncodedRequest = true;
       }
-      if (judgeSettings.fields?.trim()) payload.fields = judgeSettings.fields.trim();
+      if (normalizedFields) payload.fields = normalizedFields;
       if (judgeSettings.wait) payload.wait = true;
       if (judgeSettings.authnHeader && judgeSettings.authnToken) {
         payload.authnHeader = judgeSettings.authnHeader;

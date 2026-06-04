@@ -58,18 +58,38 @@ curl http://localhost:8080/api/problems/abc001_a
 curl http://localhost:8080/api/languages
 ```
 
+認証 API の例:
+
+```sh
+curl -c cookies.txt -X POST http://localhost:8080/api/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "username": "alice",
+    "display_name": "Alice",
+    "email": "alice@example.com",
+    "password": "change-me-please"
+  }'
+
+curl -b cookies.txt http://localhost:8080/api/auth/me
+
+curl -b cookies.txt -X PATCH http://localhost:8080/api/me/profile \
+  -H 'Content-Type: application/json' \
+  -d '{"display_name":"Alice", "bio":"I like dynamic programming."}'
+```
+
 提出 API の例:
 
 ```sh
-curl -X POST http://localhost:8080/api/submissions \
+curl -b cookies.txt -X POST http://localhost:8080/api/submissions \
   -H 'Content-Type: application/json' \
   -d '{
-    "user_id": 1,
     "problem_slug": "abc001_a",
     "language_id": 71,
     "source_code": "h1, h2 = map(int, input().split())\nprint(h1 - h2)\n"
   }'
 ```
+
+提出の `user_id` は session から決まります。リクエスト body で他ユーザー ID を指定しても使われません。
 
 ## Docker で Go を検証する
 

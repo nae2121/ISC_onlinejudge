@@ -2,16 +2,26 @@
 
 CREATE TABLE users (
   id bigserial PRIMARY KEY,
-  handle text NOT NULL UNIQUE,
+  username text NOT NULL UNIQUE,
+  display_name text NOT NULL DEFAULT '',
   email text NOT NULL UNIQUE,
   password_hash text NOT NULL,
-  role text NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  role text NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'problem_setter', 'judge_admin')),
+  rating integer NOT NULL DEFAULT 0,
+  bio text NOT NULL DEFAULT '',
+  icon_url text,
+  is_active boolean NOT NULL DEFAULT true,
+  email_verified_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE UNIQUE INDEX idx_users_username_lower ON users (lower(username));
+CREATE UNIQUE INDEX idx_users_email_lower ON users (lower(email));
+
 CREATE TABLE problems (
   id bigserial PRIMARY KEY,
+  created_by_user_id bigint REFERENCES users(id) ON DELETE SET NULL,
   title text NOT NULL,
   slug text NOT NULL UNIQUE,
   statement_markdown text NOT NULL DEFAULT '',
@@ -118,10 +128,33 @@ CREATE TABLE contest_problems (
 );
 
 CREATE TABLE contest_participants (
+  id bigserial PRIMARY KEY,
   contest_id bigint NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
   user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   registered_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (contest_id, user_id)
+  status text NOT NULL DEFAULT 'registered' CHECK (status IN ('registered', 'cancelled', 'banned')),
+  CONSTRAINT contest_participants_contest_user_key UNIQUE (contest_id, user_id)
+);
+
+CREATE TABLE sessions (
+  id bigserial PRIMARY KEY,
+  user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_token_hash text NOT NULL UNIQUE,
+  user_agent text NOT NULL DEFAULT '',
+  ip_address text NOT NULL DEFAULT '',
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  revoked_at timestamptz
+);
+
+CREATE TABLE admin_audit_logs (
+  id bigserial PRIMARY KEY,
+  actor_user_id bigint REFERENCES users(id) ON DELETE SET NULL,
+  target_user_id bigint REFERENCES users(id) ON DELETE SET NULL,
+  action text NOT NULL,
+  old_value text,
+  new_value text,
+  created_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_problems_public ON problems(is_public, id);
@@ -134,10 +167,23 @@ ON submission_results(submission_id, test_case_id)
 WHERE test_case_id IS NOT NULL;
 CREATE INDEX idx_judge_jobs_pickup ON judge_jobs(status, priority DESC, created_at ASC);
 CREATE INDEX idx_judge_jobs_locked_at ON judge_jobs(status, locked_at);
+CREATE INDEX idx_contest_participants_contest_status ON contest_participants(contest_id, status);
+CREATE INDEX idx_contest_participants_user ON contest_participants(user_id);
+CREATE INDEX idx_sessions_user_expires ON sessions(user_id, expires_at);
+CREATE INDEX idx_sessions_token_active ON sessions(session_token_hash)
+WHERE revoked_at IS NULL;
+CREATE INDEX idx_admin_audit_logs_target ON admin_audit_logs(target_user_id, created_at DESC);
 
-INSERT INTO users (handle, email, password_hash, role)
-VALUES ('admin', 'admin@example.com', 'change-me', 'admin')
-ON CONFLICT (handle) DO NOTHING;
+INSERT INTO users (username, display_name, email, password_hash, role, email_verified_at)
+VALUES (
+  'admin',
+  'Admin',
+  'admin@example.com',
+  '$2b$10$kyWCGalLMjnAtOBogqzdPOyxl7gNpJYCa3gxcFQfqwu1vI67TO.ZS',
+  'admin',
+  now()
+)
+ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO languages (id, name, version, source_file_name, compile_command, run_command)
 VALUES
@@ -193,6 +239,8 @@ ON CONFLICT (problem_id, name) DO NOTHING;
 -- +goose Down
 
 DROP TABLE IF EXISTS contest_participants;
+DROP TABLE IF EXISTS admin_audit_logs;
+DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS contest_problems;
 DROP TABLE IF EXISTS contests;
 DROP TABLE IF EXISTS judge_jobs;

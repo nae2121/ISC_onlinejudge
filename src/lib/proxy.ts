@@ -5,8 +5,8 @@ const REQUEST_TIMEOUT_MS = 15_000;
 export function serviceUrl(name: "demo" | "judge0") {
   const raw =
     name === "demo"
-      ? process.env.DEMO_URL ?? "http://demo:5000"
-      : process.env.JUDGE0_URL ?? "http://server:2358";
+      ? process.env.DEMO_URL ?? "http://localhost:5000"
+      : process.env.JUDGE0_URL ?? "http://localhost:2359";
 
   return raw.replace(/\/+$/, "");
 }
@@ -60,7 +60,7 @@ export function decodeSubmissionPayload(value: unknown): unknown {
 }
 
 function decodeFields(target: Record<string, unknown>) {
-  for (const key of ["stdout", "stderr", "compile_output"] as const) {
+  for (const key of ["stdout", "stderr", "compile_output", "message"] as const) {
     const decoded = tryDecodeBase64(target[key]);
     if (decoded === null) {
       continue;

@@ -32,7 +32,9 @@ func main() {
 	store := repository.NewStore(pool)
 	problemService := service.NewProblemService(store)
 	submissionService := service.NewSubmissionService(store, cfg.DefaultPriority)
-	server := handler.NewServer(problemService, submissionService)
+	authService := service.NewAuthService(store, cfg.SessionTTL)
+	userService := service.NewUserService(store)
+	server := handler.NewServer(problemService, submissionService, authService, userService)
 
 	httpServer := &http.Server{
 		Addr:              cfg.HTTPAddr,

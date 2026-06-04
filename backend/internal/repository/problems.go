@@ -5,7 +5,7 @@ import "context"
 func (s *Store) ListPublicProblems(ctx context.Context) ([]Problem, error) {
 	rows, err := s.pool.Query(ctx, `
 SELECT id, title, slug, statement_markdown, time_limit_ms, memory_limit_kb,
-       score, difficulty, is_public, created_at, updated_at
+       score, difficulty, is_public, created_at, updated_at, created_by_user_id
 FROM problems
 WHERE is_public = true
 ORDER BY id ASC`)
@@ -28,7 +28,7 @@ ORDER BY id ASC`)
 func (s *Store) GetProblemBySlug(ctx context.Context, slug string) (Problem, error) {
 	row := s.pool.QueryRow(ctx, `
 SELECT id, title, slug, statement_markdown, time_limit_ms, memory_limit_kb,
-       score, difficulty, is_public, created_at, updated_at
+       score, difficulty, is_public, created_at, updated_at, created_by_user_id
 FROM problems
 WHERE slug = $1`, slug)
 	return scanProblem(row)
@@ -37,7 +37,7 @@ WHERE slug = $1`, slug)
 func (s *Store) GetProblemByID(ctx context.Context, id int64) (Problem, error) {
 	row := s.pool.QueryRow(ctx, `
 SELECT id, title, slug, statement_markdown, time_limit_ms, memory_limit_kb,
-       score, difficulty, is_public, created_at, updated_at
+       score, difficulty, is_public, created_at, updated_at, created_by_user_id
 FROM problems
 WHERE id = $1`, id)
 	return scanProblem(row)
@@ -103,6 +103,7 @@ func scanProblem(row problemScanner) (Problem, error) {
 		&problem.IsPublic,
 		&problem.CreatedAt,
 		&problem.UpdatedAt,
+		&problem.CreatedByUserID,
 	)
 	return problem, err
 }

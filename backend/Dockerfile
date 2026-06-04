@@ -6,6 +6,7 @@ COPY go.mod ./
 RUN go mod download
 
 COPY . .
+RUN go mod tidy
 RUN CGO_ENABLED=0 go build -o /out/api ./cmd/api
 RUN CGO_ENABLED=0 go build -o /out/judge-worker ./cmd/judge-worker
 RUN CGO_ENABLED=0 go build -o /out/migrate ./cmd/migrate

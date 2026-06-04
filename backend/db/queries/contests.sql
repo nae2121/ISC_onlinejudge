@@ -15,3 +15,15 @@ FROM contest_problems
 WHERE contest_id = $1
 ORDER BY order_index ASC;
 
+-- name: RegisterContestParticipant :one
+INSERT INTO contest_participants (contest_id, user_id, status)
+VALUES ($1, $2, 'registered')
+ON CONFLICT (contest_id, user_id)
+DO UPDATE SET status = 'registered', registered_at = now()
+RETURNING id, contest_id, user_id, registered_at, status;
+
+-- name: ListContestParticipants :many
+SELECT id, contest_id, user_id, registered_at, status
+FROM contest_participants
+WHERE contest_id = $1
+ORDER BY registered_at ASC, id ASC;
