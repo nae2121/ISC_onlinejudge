@@ -6,6 +6,11 @@ import (
 )
 
 const (
+	RoleUser          = "user"
+	RoleAdmin         = "admin"
+	RoleProblemSetter = "problem_setter"
+	RoleJudgeAdmin    = "judge_admin"
+
 	SubmissionWaitingJudge = "WJ"
 	SubmissionAccepted     = "AC"
 	SubmissionWrongAnswer  = "WA"
@@ -20,10 +25,31 @@ const (
 	JobRunning   = "running"
 	JobCompleted = "completed"
 	JobFailed    = "failed"
+
+	ContestParticipantRegistered = "registered"
+	ContestParticipantCancelled  = "cancelled"
+	ContestParticipantBanned     = "banned"
 )
+
+type User struct {
+	ID              int64
+	Username        string
+	DisplayName     string
+	Email           string
+	PasswordHash    string
+	Role            string
+	Rating          int
+	Bio             string
+	IconURL         sql.NullString
+	IsActive        bool
+	EmailVerifiedAt sql.NullTime
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
 
 type Problem struct {
 	ID                int64
+	CreatedByUserID   sql.NullInt64
 	Title             string
 	Slug              string
 	StatementMarkdown string
@@ -90,6 +116,61 @@ type SubmissionResult struct {
 	StderrPath      sql.NullString
 	ErrorMessage    sql.NullString
 	CreatedAt       time.Time
+}
+
+type Session struct {
+	ID               int64
+	UserID           int64
+	SessionTokenHash string
+	UserAgent        string
+	IPAddress        string
+	ExpiresAt        time.Time
+	CreatedAt        time.Time
+	RevokedAt        sql.NullTime
+}
+
+type ContestParticipant struct {
+	ID           int64
+	ContestID    int64
+	UserID       int64
+	RegisteredAt time.Time
+	Status       string
+}
+
+type CreateUserParams struct {
+	Username     string
+	DisplayName  string
+	Email        string
+	PasswordHash string
+	Role         string
+}
+
+type UpdateUserProfileParams struct {
+	UserID      int64
+	DisplayName string
+	Bio         string
+	IconURL     sql.NullString
+}
+
+type CreateSessionParams struct {
+	UserID           int64
+	SessionTokenHash string
+	UserAgent        string
+	IPAddress        string
+	ExpiresAt        time.Time
+}
+
+type ListUsersParams struct {
+	Limit  int
+	Offset int
+}
+
+type AdminAuditLogParams struct {
+	ActorUserID int64
+	TargetUserID int64
+	Action      string
+	OldValue    sql.NullString
+	NewValue    sql.NullString
 }
 
 type CreateSubmissionParams struct {

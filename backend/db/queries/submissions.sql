@@ -10,6 +10,15 @@ SELECT id, user_id, problem_id, language_id, source_code, status, score,
 FROM submissions
 WHERE id = $1;
 
+-- name: ListSubmissionsByUsername :many
+SELECT s.id, s.user_id, s.problem_id, s.language_id, s.source_code, s.status,
+       s.score, s.max_time_ms, s.max_memory_kb, s.submitted_at, s.judged_at
+FROM submissions s
+JOIN users u ON u.id = s.user_id
+WHERE lower(u.username) = lower($1)
+ORDER BY s.submitted_at DESC, s.id DESC
+LIMIT $2;
+
 -- name: UpdateSubmissionFinal :exec
 UPDATE submissions
 SET status = $2,

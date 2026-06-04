@@ -19,22 +19,40 @@ import (
 type Server struct {
 	problems    *service.ProblemService
 	submissions *service.SubmissionService
+	auth        *service.AuthService
+	users       *service.UserService
 }
 
-func NewServer(problems *service.ProblemService, submissions *service.SubmissionService) *Server {
+func NewServer(
+	problems *service.ProblemService,
+	submissions *service.SubmissionService,
+	auth *service.AuthService,
+	users *service.UserService,
+) *Server {
 	return &Server{
 		problems:    problems,
 		submissions: submissions,
+		auth:        auth,
+		users:       users,
 	}
 }
 
 func (s *Server) Routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", s.handleHealth)
+	mux.HandleFunc("/api/auth/register", s.handleAuthRegister)
+	mux.HandleFunc("/api/auth/login", s.handleAuthLogin)
+	mux.Handle("/api/auth/logout", s.requireAuth(http.HandlerFunc(s.handleAuthLogout)))
+	mux.Handle("/api/auth/me", s.requireAuth(http.HandlerFunc(s.handleAuthMe)))
+	mux.HandleFunc("/api/users/", s.handleUserRoutes)
+	mux.Handle("/api/me/profile", s.requireAuth(http.HandlerFunc(s.handleMeProfile)))
+	mux.Handle("/api/me/password", s.requireAuth(http.HandlerFunc(s.handleMePassword)))
+	mux.Handle("/api/admin/users", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUsers)))
+	mux.Handle("/api/admin/users/", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUserDetail)))
 	mux.HandleFunc("/api/problems", s.handleProblems)
 	mux.HandleFunc("/api/problems/", s.handleProblemDetail)
 	mux.HandleFunc("/api/languages", s.handleLanguages)
-	mux.HandleFunc("/api/submissions", s.handleSubmissions)
+	mux.Handle("/api/submissions", s.requireAuth(http.HandlerFunc(s.handleSubmissions)))
 	mux.HandleFunc("/api/submissions/", s.handleSubmissionDetail)
 	return requestTimeout(logging(mux), 15*time.Second)
 }
@@ -121,13 +139,18 @@ func (s *Server) handleSubmissions(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
-	if req.UserID == 0 || req.LanguageID == 0 || strings.TrimSpace(req.SourceCode) == "" {
-		writeError(w, http.StatusBadRequest, "user_id, language_id and source_code are required")
+	user, ok := currentUserFromRequest(r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "authentication required")
+		return
+	}
+	if req.LanguageID == 0 || strings.TrimSpace(req.SourceCode) == "" {
+		writeError(w, http.StatusBadRequest, "language_id and source_code are required")
 		return
 	}
 
 	submission, err := s.submissions.Submit(r.Context(), service.CreateSubmissionInput{
-		UserID:      req.UserID,
+		UserID:      user.ID,
 		ProblemID:   req.ProblemID,
 		ProblemSlug: req.ProblemSlug,
 		LanguageID:  req.LanguageID,
@@ -199,7 +222,6 @@ func requestTimeout(next http.Handler, timeout time.Duration) http.Handler {
 }
 
 type createSubmissionRequest struct {
-	UserID      int64  `json:"user_id"`
 	ProblemID   int64  `json:"problem_id"`
 	ProblemSlug string `json:"problem_slug"`
 	LanguageID  int64  `json:"language_id"`
