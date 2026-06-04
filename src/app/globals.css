@@ -1,0 +1,517 @@
+:root {
+  --bg: #fbfbf9;
+  --panel: #f0f1ed;
+  --panel-strong: #e5e8e1;
+  --surface: #ffffff;
+  --text: #171a16;
+  --muted: #667064;
+  --line: rgba(38, 44, 35, 0.14);
+  --accent: #2f5f8f;
+  --accent-strong: #254f79;
+  --accent-soft: #d7e7f5;
+  --success: #2f7d4f;
+  --warning: #946b20;
+  --danger: #b94242;
+  --textarea: #fcfcfb;
+  --shadow: 0 18px 70px rgba(22, 26, 20, 0.22);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.workbench {
+  display: flex;
+  min-height: 100dvh;
+  color: var(--text);
+  background: var(--bg);
+  flex-direction: column;
+}
+
+.workbench.dark {
+  --bg: #171817;
+  --panel: #20221f;
+  --panel-strong: #292d27;
+  --surface: #121312;
+  --text: #ecefe7;
+  --muted: #a5ad9c;
+  --line: rgba(238, 244, 229, 0.13);
+  --accent: #7fa7d7;
+  --accent-strong: #a8c5e8;
+  --accent-soft: #273746;
+  --success: #8cc98f;
+  --warning: #dfbd70;
+  --danger: #ef8b8b;
+  --textarea: #141514;
+  --shadow: 0 18px 70px rgba(0, 0, 0, 0.48);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbarSpacer {
+  flex: 1;
+}
+
+.iconButton,
+.runButton,
+.primaryButton,
+.segmented button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.iconButton {
+  width: 36px;
+  padding: 0;
+}
+
+.iconButton.small {
+  width: 28px;
+  min-height: 28px;
+}
+
+.runButton {
+  gap: 8px;
+  min-width: 96px;
+  padding: 0 13px;
+  color: #fff;
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.runButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.primaryButton {
+  min-width: 78px;
+  padding: 0 14px;
+  color: #fff;
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.languageSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: min(460px, 48vw);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.languageSelector select {
+  min-width: 0;
+  width: 100%;
+  height: 34px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--textarea);
+  padding: 0 9px;
+}
+
+.statusPill {
+  min-width: 74px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  background: var(--surface);
+}
+
+.statusPill.done {
+  color: var(--success);
+}
+
+.statusPill.error {
+  color: var(--danger);
+}
+
+.statusPill.submitting,
+.statusPill.polling {
+  color: var(--warning);
+}
+
+.workspace {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+}
+
+.sidePanel,
+.centerPanel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.sidePanel {
+  min-width: 40px;
+  background: var(--panel);
+}
+
+.problemPanel {
+  border-right: 1px solid var(--line);
+}
+
+.ioPanel {
+  border-left: 1px solid var(--line);
+}
+
+.centerPanel {
+  min-width: 0;
+  flex: 1;
+  background: var(--surface);
+}
+
+.panelHeader,
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.panelHeader strong,
+.sectionHeader strong {
+  font-size: 13px;
+}
+
+.problemBody {
+  flex: 1;
+  min-height: 0;
+  margin: 10px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 12px;
+  font-family: inherit;
+  line-height: 1.55;
+}
+
+.colResizer {
+  flex: 0 0 8px;
+  cursor: col-resize;
+  background: var(--bg);
+  border-inline: 1px solid transparent;
+}
+
+.colResizer:hover,
+.ioResizer:hover {
+  background: var(--panel-strong);
+}
+
+.editorHost {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+}
+
+.editorFallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  background: var(--surface);
+}
+
+.ioContainer {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.ioSection {
+  display: flex;
+  min-height: 40px;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ioSection:not(.ioCollapsed).outputSection {
+  flex: 1 1 auto;
+}
+
+.ioTextarea {
+  width: calc(100% - 20px);
+  min-height: 0;
+  flex: 1;
+  margin: 10px;
+  resize: none;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--textarea);
+  padding: 10px;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  line-height: 1.45;
+}
+
+.outputTextarea {
+  white-space: pre;
+}
+
+.ioResizer {
+  flex: 0 0 8px;
+  cursor: row-resize;
+  background: var(--bg);
+  border-block: 1px solid transparent;
+}
+
+.ioCollapsed {
+  flex: 0 0 40px !important;
+}
+
+.collapsed .panelHeader {
+  justify-content: center;
+  padding-inline: 4px;
+}
+
+.modalLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 9vh 18px 18px;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.settingsModal {
+  width: min(640px, 100%);
+  max-height: 82vh;
+  overflow: auto;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.modalHeader,
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+}
+
+.modalHeader {
+  border-bottom: 1px solid var(--line);
+}
+
+.modalFooter {
+  border-top: 1px solid var(--line);
+}
+
+.modalFooter img {
+  width: auto;
+  max-width: 136px;
+  max-height: 58px;
+  object-fit: contain;
+}
+
+.settingsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.settingsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+}
+
+.settingsGroup + .settingsGroup {
+  border-top: 1px solid var(--line);
+}
+
+.segmented {
+  display: inline-grid;
+  width: fit-content;
+  grid-template-columns: repeat(2, minmax(86px, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.segmented button {
+  min-height: 30px;
+  border-color: transparent;
+  background: transparent;
+  padding: 0 14px;
+}
+
+.segmented button.active {
+  color: #fff;
+  background: var(--accent-strong);
+}
+
+.checkRow,
+.rangeRow,
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rangeRow input {
+  width: min(280px, 100%);
+}
+
+.fieldRow {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.fieldRow input {
+  min-height: 34px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--textarea);
+  padding: 0 9px;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 820px) {
+  body {
+    overflow: auto;
+  }
+
+  .workbench {
+    min-height: 100dvh;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .languageSelector {
+    min-width: 0;
+    flex: 1 1 230px;
+  }
+
+  .topbarSpacer {
+    display: none;
+  }
+
+  .workspace {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .sidePanel,
+  .centerPanel {
+    flex: 0 0 auto !important;
+    width: 100%;
+  }
+
+  .problemPanel {
+    height: 180px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .centerPanel {
+    min-height: 420px;
+  }
+
+  .ioPanel {
+    height: 320px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .colResizer {
+    display: none;
+  }
+
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+}
