@@ -100,13 +100,19 @@ func (s *Server) handleAuthMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleMeProfile(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPatch {
-		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
 	user, ok := currentUserFromRequest(r)
 	if !ok {
 		writeError(w, http.StatusUnauthorized, "authentication required")
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		writeJSON(w, http.StatusOK, toCurrentUserResponse(user))
+		return
+	}
+
+	if r.Method != http.MethodPatch {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
@@ -125,6 +131,31 @@ func (s *Server) handleMeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, toCurrentUserResponse(updated))
+}
+
+func (s *Server) handleMeSubmissions(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	user, ok := currentUserFromRequest(r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "authentication required")
+		return
+	}
+
+	limit := parseQueryInt(r, "limit", 50)
+	submissions, err := s.users.ListSubmissionsByUsername(r.Context(), user.Username, limit)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	resp := make([]submissionResponse, 0, len(submissions))
+	for _, submission := range submissions {
+		resp = append(resp, toSubmissionResponse(submission, nil))
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 func (s *Server) handleMePassword(w http.ResponseWriter, r *http.Request) {
