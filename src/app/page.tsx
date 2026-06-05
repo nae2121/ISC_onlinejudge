@@ -1,5 +1,5 @@
-import { JudgeWorkbench } from "@/components/JudgeWorkbench";
+import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  return <JudgeWorkbench />;
+  redirect("/dashboard");
 }

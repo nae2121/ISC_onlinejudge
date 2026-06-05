@@ -47,6 +47,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("/api/users/", s.handleUserRoutes)
 	mux.Handle("/api/me/profile", s.requireAuth(http.HandlerFunc(s.handleMeProfile)))
 	mux.Handle("/api/me/password", s.requireAuth(http.HandlerFunc(s.handleMePassword)))
+	mux.Handle("/api/me/submissions", s.requireAuth(http.HandlerFunc(s.handleMeSubmissions)))
 	mux.Handle("/api/admin/users", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUsers)))
 	mux.Handle("/api/admin/users/", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUserDetail)))
 	mux.HandleFunc("/api/problems", s.handleProblems)

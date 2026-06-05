@@ -1,0 +1,41 @@
+import { Code2, Gauge, ListChecks, UserCircle } from "lucide-react";
+import Link from "next/link";
+import type { CurrentUser } from "@/lib/api";
+import { UserMenu } from "@/components/UserMenu";
+
+export function Header({ user }: { user: CurrentUser }) {
+  return (
+    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex min-h-14 w-full max-w-6xl items-center gap-3 px-4">
+        <Link className="flex items-center gap-2 text-sm font-bold text-zinc-950" href="/dashboard">
+          <Code2 className="h-5 w-5 text-teal-700" aria-hidden="true" />
+          <span>Wait for Judge</span>
+        </Link>
+        <nav className="ml-2 flex min-w-0 flex-1 items-center gap-1">
+          <Link
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
+            href="/dashboard"
+          >
+            <Gauge className="h-4 w-4" aria-hidden="true" />
+            <span>Dashboard</span>
+          </Link>
+          <Link
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
+            href="/problems"
+          >
+            <ListChecks className="h-4 w-4" aria-hidden="true" />
+            <span>Problems</span>
+          </Link>
+          <Link
+            className="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 sm:inline-flex"
+            href="/profile"
+          >
+            <UserCircle className="h-4 w-4" aria-hidden="true" />
+            <span>Profile</span>
+          </Link>
+        </nav>
+        <UserMenu user={user} />
+      </div>
+    </header>
+  );
+}

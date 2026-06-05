@@ -11,6 +11,16 @@ ORDER BY priority DESC, created_at ASC
 FOR UPDATE SKIP LOCKED
 LIMIT 1;
 
+-- name: MarkJudgeJobRunning :one
+UPDATE judge_jobs
+SET status = 'running',
+    attempts = attempts + 1,
+    locked_by = $2,
+    locked_at = now(),
+    updated_at = now()
+WHERE id = $1
+RETURNING id, submission_id, status, priority, attempts, locked_by, locked_at, created_at, updated_at;
+
 -- name: CompleteJudgeJob :exec
 UPDATE judge_jobs
 SET status = 'completed', locked_by = NULL, locked_at = NULL, updated_at = now()
