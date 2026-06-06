@@ -1,13 +1,20 @@
 "use client";
 
-import { ArrowRight, CheckCircle2, FileCode2, ListChecks, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  FileCode2,
+  ListChecks,
+  ShieldCheck,
+  Trophy,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { ProtectedPage } from "@/components/ProtectedPage";
 import { SubmissionStatusBadge } from "@/components/SubmissionStatusBadge";
 import type { CurrentUser, Problem, Submission } from "@/lib/api";
-import { getMySubmissions, getProblems } from "@/lib/api";
+import { getMySubmissions, getProblems, isAdminUser } from "@/lib/api";
 
 export default function DashboardPage() {
   return <ProtectedPage>{(user) => <DashboardContent user={user} />}</ProtectedPage>;
@@ -35,6 +42,15 @@ function DashboardContent({ user }: { user: CurrentUser }) {
           </h1>
         </div>
         <div className="flex flex-wrap gap-2">
+          {isAdminUser(user) && (
+            <Link
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-800 hover:bg-teal-100"
+              href="/admin"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              管理ページ
+            </Link>
+          )}
           <Link
             className="inline-flex h-10 items-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
             href="/problems"
