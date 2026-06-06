@@ -94,6 +94,7 @@ button {
 
 .iconButton,
 .runButton,
+.submitButton,
 .primaryButton,
 .segmented button {
   display: inline-flex;
@@ -125,7 +126,21 @@ button {
   background: var(--accent-strong);
 }
 
-.runButton:disabled {
+.submitButton {
+  gap: 8px;
+  min-width: 90px;
+  padding: 0 13px;
+  color: var(--accent-strong);
+  border-color: var(--accent-soft);
+  background: var(--surface);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.runButton:disabled,
+.submitButton:disabled {
   cursor: wait;
   opacity: 0.72;
 }
@@ -332,6 +347,49 @@ button {
   color: var(--danger);
 }
 
+.sampleList {
+  display: grid;
+  gap: 10px;
+}
+
+.sampleBlock {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--textarea);
+  padding: 9px;
+}
+
+.sampleBlock strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.sampleBlock span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.sampleBlock pre {
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 7px;
+}
+
+.sampleBlock p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .colResizer {
   flex: 0 0 8px;
   cursor: col-resize;
@@ -339,7 +397,27 @@ button {
   border-inline: 1px solid transparent;
 }
 
+.panelResizeHandle {
+  position: relative;
+  flex: 0 0 8px;
+  background: var(--bg);
+  border-inline: 1px solid transparent;
+  cursor: col-resize;
+}
+
+.panelResizeHandle::after {
+  position: absolute;
+  inset-block: 40%;
+  left: 50%;
+  width: 2px;
+  content: "";
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: var(--line);
+}
+
 .colResizer:hover,
+.panelResizeHandle:hover,
 .ioResizer:hover {
   background: var(--panel-strong);
 }
@@ -393,6 +471,89 @@ button {
   font-family:
     "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   line-height: 1.45;
+}
+
+.customInputArea,
+.outputArea {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.sampleControls {
+  display: grid;
+  gap: 8px;
+  padding: 10px 10px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sampleButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sampleButtons button,
+.sampleRunButton {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.sampleButtons button.active {
+  color: #fff;
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.sampleRunButton {
+  width: fit-content;
+  color: #fff;
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.sampleRunButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.customInputTextarea {
+  margin-top: 8px;
+}
+
+.resultSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 10px 0;
+}
+
+.resultSummaryGrid div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--textarea);
+  padding: 7px;
+}
+
+.resultSummaryGrid span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.resultSummaryGrid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 12px;
 }
 
 .outputTextarea {
