@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Home,
   Loader2,
   Play,
   Settings
@@ -826,10 +825,6 @@ export function JudgeWorkbench() {
 
       <div className={`workbench ${theme}`}>
         <header className="topbar">
-          <button className="iconButton" type="button" title="Home" onClick={() => window.location.assign("/")}>
-            <Home size={17} />
-          </button>
-
           <label className="languageSelector">
             <span>Language</span>
             <select

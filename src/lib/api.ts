@@ -11,6 +11,10 @@ export type CurrentUser = {
   submissionsCount: number;
 };
 
+export function isAdminUser(user: Pick<CurrentUser, "role"> | null | undefined) {
+  return user?.role === "admin";
+}
+
 export type Problem = {
   slug: string;
   title: string;

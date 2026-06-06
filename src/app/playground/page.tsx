@@ -1,5 +1,8 @@
+"use client";
+
 import { JudgeWorkbench } from "@/components/JudgeWorkbench";
+import { ProtectedPage } from "@/components/ProtectedPage";
 
 export default function PlaygroundPage() {
-  return <JudgeWorkbench />;
+  return <ProtectedPage>{() => <JudgeWorkbench />}</ProtectedPage>;
 }
