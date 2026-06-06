@@ -62,7 +62,7 @@ function ProblemDetailContent({ slug }: { slug: string }) {
           </div>
           <Link
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
-            href="/playground"
+            href={`/playground?problem=${encodeURIComponent(problem.slug)}`}
           >
             <Play className="h-4 w-4" aria-hidden="true" />
             提出画面

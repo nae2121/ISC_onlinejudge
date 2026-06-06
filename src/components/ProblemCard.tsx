@@ -18,7 +18,7 @@ export function ProblemCard({ problem }: { problem: Problem }) {
   return (
     <Link
       className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4 shadow-sm hover:border-teal-300 hover:bg-teal-50/30"
-      href={`/problems/${problem.slug}`}
+      href={`/playground?problem=${encodeURIComponent(problem.slug)}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">

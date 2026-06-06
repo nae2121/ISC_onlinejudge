@@ -236,7 +236,6 @@ button {
   min-height: 0;
   margin: 10px;
   overflow: auto;
-  white-space: pre-wrap;
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -244,6 +243,93 @@ button {
   padding: 12px;
   font-family: inherit;
   line-height: 1.55;
+}
+
+.problemContent {
+  display: grid;
+  gap: 14px;
+}
+
+.problemKicker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.problemTitle {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.problemMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  gap: 8px;
+}
+
+.problemMetaItem {
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--textarea);
+  padding: 8px;
+}
+
+.problemMetaItem span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.problemMetaItem strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.problemTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.problemTag {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--textarea);
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.problemSection {
+  display: grid;
+  gap: 8px;
+}
+
+.problemSection h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.problemStatement {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+  font-family: inherit;
+  line-height: 1.65;
+}
+
+.problemNotice {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.problemNotice.error {
+  color: var(--danger);
 }
 
 .colResizer {
