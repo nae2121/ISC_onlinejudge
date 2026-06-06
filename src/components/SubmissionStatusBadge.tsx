@@ -6,6 +6,7 @@ const statusClasses: Record<SubmissionStatus, string> = {
   TLE: "border-amber-200 bg-amber-50 text-amber-700",
   RE: "border-orange-200 bg-orange-50 text-orange-700",
   CE: "border-violet-200 bg-violet-50 text-violet-700",
+  IE: "border-zinc-300 bg-zinc-100 text-zinc-700",
   WJ: "border-slate-200 bg-slate-50 text-slate-600",
 };
 

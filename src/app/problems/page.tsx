@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ProblemList } from "@/components/ProblemList";
 import { ProtectedPage } from "@/components/ProtectedPage";
 import type { Problem } from "@/lib/api";
-import { getProblems } from "@/lib/api";
+import { getMySubmissions, getProblems } from "@/lib/api";
 
 export default function ProblemsPage() {
   return <ProtectedPage>{() => <ProblemsContent />}</ProtectedPage>;
@@ -15,8 +15,24 @@ function ProblemsContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getProblems()
-      .then(setProblems)
+    Promise.all([getProblems(), getMySubmissions().catch(() => [])])
+      .then(([nextProblems, submissions]) => {
+        const solvedKeys = new Set(
+          submissions
+            .filter((submission) => submission.status === "AC")
+            .flatMap((submission) => [
+              submission.problemSlug,
+              submission.problemId ? String(submission.problemId) : "",
+            ])
+            .filter(Boolean)
+        );
+        setProblems(
+          nextProblems.map((problem) => ({
+            ...problem,
+            solved: solvedKeys.has(problem.slug) || solvedKeys.has(String(problem.id)),
+          }))
+        );
+      })
       .finally(() => setLoading(false));
   }, []);
 

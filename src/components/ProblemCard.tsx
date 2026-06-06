@@ -1,4 +1,4 @@
-import { Clock, Database, Tag } from "lucide-react";
+import { CheckCircle2, Clock, Database, Tag } from "lucide-react";
 import Link from "next/link";
 import type { Problem } from "@/lib/api";
 
@@ -18,11 +18,19 @@ export function ProblemCard({ problem }: { problem: Problem }) {
   return (
     <Link
       className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4 shadow-sm hover:border-teal-300 hover:bg-teal-50/30"
-      href={`/playground?problem=${encodeURIComponent(problem.slug)}`}
+      href={`/problems/${encodeURIComponent(problem.slug)}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="truncate text-base font-semibold text-zinc-950">{problem.title}</h2>
+          <h2 className="flex min-w-0 items-center gap-2 text-base font-semibold text-zinc-950">
+            <span className="min-w-0 truncate">{problem.title}</span>
+            {problem.solved ? (
+              <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-700">
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                AC
+              </span>
+            ) : null}
+          </h2>
           <p className="mt-1 text-sm text-zinc-500">{problem.slug}</p>
         </div>
         <span

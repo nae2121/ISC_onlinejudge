@@ -3,9 +3,15 @@
 import {
   Loader2,
   Play,
+  Send,
   Settings
 } from "lucide-react";
 import Script from "next/script";
+import {
+  Group as PanelGroup,
+  Panel,
+  Separator as PanelResizeHandle,
+} from "react-resizable-panels";
 import {
   type MouseEvent as ReactMouseEvent,
   useCallback,
@@ -22,8 +28,8 @@ import type {
   RunStatus,
   ThemeName
 } from "@/components/types";
-import type { Problem } from "@/lib/api";
-import { getProblem } from "@/lib/api";
+import type { Problem, ProblemSample, Submission } from "@/lib/api";
+import { getProblem, getSubmission, submitProblem } from "@/lib/api";
 
 type AceEditor = {
   commands?: {
@@ -78,9 +84,6 @@ const REQUIRED_RESULT_FIELDS = [
   "message"
 ];
 const DEFAULT_RESULT_FIELDS = REQUIRED_RESULT_FIELDS.join(",");
-const MIN_PANEL_WIDTH = 48;
-const DEFAULT_LEFT_WIDTH = 288;
-const DEFAULT_RIGHT_WIDTH = 332;
 const DEFAULT_INPUT_HEIGHT = 220;
 
 const DEFAULT_SOURCE = `
@@ -95,13 +98,32 @@ int main() {
 }
 `;
 
-const PROBLEM_TEXT = `標準入力から1行を受け取り、そのまま標準出力へ表示してください。
+type WorkbenchProblem = Problem & {
+  constraints?: string;
+  inputFormat?: string;
+  outputFormat?: string;
+  samples: ProblemSample[];
+};
 
-入力例
-hello
+type ExecutionSummary = {
+  compileOutput: string;
+  memory: string;
+  message: string;
+  status: string;
+  stderr: string;
+  stdout: string;
+  time: string;
+};
 
-出力例
-hello`;
+const EMPTY_EXECUTION_SUMMARY: ExecutionSummary = {
+  compileOutput: "",
+  memory: "-",
+  message: "",
+  status: "未実行",
+  stderr: "",
+  stdout: "",
+  time: "-",
+};
 
 const COMMON_KEYWORDS: Record<string, string[]> = {
   common: ["TODO", "FIXME", "console", "log", "assert", "async", "await"],
@@ -413,6 +435,71 @@ function formatTimeLimit(ms: number) {
   return `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
 }
 
+function textFromResult(value: unknown, key: "stdout" | "stderr" | "compile_output" | "message") {
+  const source = value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+  const decoded = source[`decoded_${key}`];
+  const raw = source[key];
+  return typeof decoded === "string" ? decoded : typeof raw === "string" ? raw : "";
+}
+
+function statusFromResult(value: unknown) {
+  const source = value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+  const status = source.status && typeof source.status === "object" && !Array.isArray(source.status)
+    ? (source.status as Record<string, unknown>)
+    : {};
+  return typeof status.description === "string"
+    ? status.description
+    : typeof source.status === "string"
+      ? source.status
+      : "完了";
+}
+
+function executionSummaryFromJudgeResult(value: unknown): ExecutionSummary {
+  const source = value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+  const time = source.time;
+  const memory = source.memory;
+  return {
+    compileOutput: textFromResult(source, "compile_output"),
+    memory: typeof memory === "number" ? `${memory} KB` : "-",
+    message: textFromResult(source, "message"),
+    status: statusFromResult(source),
+    stderr: textFromResult(source, "stderr"),
+    stdout: textFromResult(source, "stdout"),
+    time: typeof time === "number" || typeof time === "string" ? `${time}s` : "-",
+  };
+}
+
+function executionSummaryFromSubmission(submission: Submission): ExecutionSummary {
+  return {
+    compileOutput: "",
+    memory: submission.maxMemoryKb > 0 ? `${submission.maxMemoryKb} KB` : "-",
+    message: `submission #${submission.id}`,
+    status: submission.status,
+    stderr: "",
+    stdout: "",
+    time: submission.maxTimeMs > 0 ? `${submission.maxTimeMs} ms` : "-",
+  };
+}
+
+function isPendingSubmission(submission: Submission) {
+  return submission.status === "WJ";
+}
+
+function outputText(summary: ExecutionSummary) {
+  return [
+    summary.stdout,
+    summary.stderr ? `stderr:\n${summary.stderr}` : "",
+    summary.compileOutput ? `compile_output:\n${summary.compileOutput}` : "",
+    summary.message ? `message:\n${summary.message}` : "",
+  ].filter(Boolean).join("\n\n");
+}
+
 function ProblemPanelBody({
   error,
   loading,
@@ -420,7 +507,7 @@ function ProblemPanelBody({
 }: {
   error: string;
   loading: boolean;
-  problem: Problem | null;
+  problem: WorkbenchProblem | null;
 }) {
   if (loading) {
     return <div className="problemNotice">問題を読み込み中...</div>;
@@ -430,9 +517,7 @@ function ProblemPanelBody({
     return <div className="problemNotice error">{error}</div>;
   }
 
-  if (!problem) {
-    return <pre className="problemStatement">{PROBLEM_TEXT}</pre>;
-  }
+  if (!problem) return null;
 
   return (
     <div className="problemContent">
@@ -470,6 +555,45 @@ function ProblemPanelBody({
         <h3>問題文</h3>
         <pre className="problemStatement">{problem.statement || "問題文はまだ登録されていません。"}</pre>
       </section>
+
+      {problem.constraints ? (
+        <section className="problemSection">
+          <h3>制約</h3>
+          <pre className="problemStatement">{problem.constraints}</pre>
+        </section>
+      ) : null}
+
+      {problem.inputFormat ? (
+        <section className="problemSection">
+          <h3>入力形式</h3>
+          <pre className="problemStatement">{problem.inputFormat}</pre>
+        </section>
+      ) : null}
+
+      {problem.outputFormat ? (
+        <section className="problemSection">
+          <h3>出力形式</h3>
+          <pre className="problemStatement">{problem.outputFormat}</pre>
+        </section>
+      ) : null}
+
+      {problem.samples.length > 0 ? (
+        <section className="problemSection">
+          <h3>サンプル</h3>
+          <div className="sampleList">
+            {problem.samples.map((sample) => (
+              <div className="sampleBlock" key={sample.name}>
+                <strong>{sample.name}</strong>
+                <span>入力</span>
+                <pre>{sample.input}</pre>
+                <span>出力</span>
+                <pre>{sample.output}</pre>
+                {sample.explanation ? <p>{sample.explanation}</p> : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -500,10 +624,12 @@ export function JudgeWorkbench() {
   const [stdout, setStdout] = useState("");
   const [runStatus, setRunStatus] = useState<RunStatus>("idle");
   const [problem, setProblem] = useState<Problem | null>(null);
+  const [requestedProblemSlug, setRequestedProblemSlug] = useState(problemSlugFromLocation);
   const [problemLoading, setProblemLoading] = useState(false);
   const [problemError, setProblemError] = useState("");
-  const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT_WIDTH);
-  const [rightWidth, setRightWidth] = useState(DEFAULT_RIGHT_WIDTH);
+  const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
+  const [executionSummary, setExecutionSummary] = useState<ExecutionSummary>(EMPTY_EXECUTION_SUMMARY);
+  const [submitStatus, setSubmitStatus] = useState<RunStatus>("idle");
   const [inputHeight, setInputHeight] = useState(DEFAULT_INPUT_HEIGHT);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
@@ -518,9 +644,12 @@ export function JudgeWorkbench() {
     () => guessAceModeFromJudge0Name(languageName(selectedLanguageMeta)),
     [selectedLanguageMeta]
   );
+  const displayProblem = problem as WorkbenchProblem | null;
+  const samples = displayProblem?.samples ?? [];
 
   useEffect(() => {
     const slug = problemSlugFromLocation();
+    setRequestedProblemSlug(slug);
 
     if (!slug) {
       setProblem(null);
@@ -714,19 +843,21 @@ export function JudgeWorkbench() {
     inputCollapsed,
     inputHeight,
     leftCollapsed,
-    leftWidth,
     outputCollapsed,
-    rightCollapsed,
-    rightWidth
+    rightCollapsed
   ]);
 
-  const handleRun = useCallback(async () => {
+  const handleRun = useCallback(async (inputOverride?: string) => {
     const editor = editorRef.current;
     if (!editor || runStatus === "submitting" || runStatus === "polling") {
       return;
     }
 
     const sourceCode = editor.getValue();
+    const runInput = inputOverride ?? stdin;
+    if (inputOverride !== undefined) {
+      setStdin(inputOverride);
+    }
     const selected = selectedLanguage || aceMode;
     const parsedLanguageId = Number.parseInt(selected, 10);
     const resolvedLanguageId = Number.isFinite(parsedLanguageId)
@@ -742,13 +873,13 @@ export function JudgeWorkbench() {
     const payload: Record<string, unknown> = {
       language_id: resolvedLanguageId,
       source_code: sourceCode,
-      stdin
+      stdin: runInput
     };
 
     if (useSettings) {
       if (judgeSettings.base64) {
         payload.source_code = encodeBase64(sourceCode);
-        payload.stdin = encodeBase64(stdin);
+        payload.stdin = encodeBase64(runInput);
         payload.base64EncodedRequest = true;
       }
       if (normalizedFields) payload.fields = normalizedFields;
@@ -762,6 +893,10 @@ export function JudgeWorkbench() {
     try {
       setRunStatus("submitting");
       setStdout("送信中...");
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        status: "送信中",
+      });
 
       const response = await fetch("/api/proxy/submit", {
         method: "POST",
@@ -781,19 +916,32 @@ export function JudgeWorkbench() {
       const token = submitResult.token ?? submitResult.result?.token;
 
       if (submitResult.done && submitResult.result) {
-        setStdout(decodeResultForDisplay(immediateResult, judgeSettings));
+        const summary = executionSummaryFromJudgeResult(immediateResult);
+        setExecutionSummary(summary);
+        setStdout(outputText(summary) || decodeResultForDisplay(immediateResult, judgeSettings));
         setRunStatus("done");
         return;
       }
 
       if (!token) {
-        setStdout(JSON.stringify(submitResult, null, 2));
+        const fallback = JSON.stringify(submitResult, null, 2);
+        setExecutionSummary({
+          ...EMPTY_EXECUTION_SUMMARY,
+          message: fallback,
+          status: "完了",
+        });
+        setStdout(fallback);
         setRunStatus("done");
         return;
       }
 
       setRunStatus("polling");
       setStdout(`トークン: ${token}\nポーリング中...`);
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        message: `token: ${token}`,
+        status: "実行中",
+      });
 
       for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt += 1) {
         const resultResponse = await fetch(`/api/proxy/result/${encodeURIComponent(token)}`);
@@ -816,20 +964,36 @@ export function JudgeWorkbench() {
             : typeof statusId === "number" && statusId > 2;
 
         if (done) {
-          setStdout(decodeResultForDisplay(resultObject, judgeSettings));
+          const summary = executionSummaryFromJudgeResult(resultObject);
+          setExecutionSummary(summary);
+          setStdout(outputText(summary) || decodeResultForDisplay(resultObject, judgeSettings));
           setRunStatus("done");
           return;
         }
 
         const description = resultObject.status?.description ?? "実行中...";
         setStdout(`処理中: ${description}`);
+        setExecutionSummary((current) => ({
+          ...current,
+          status: String(description),
+        }));
         await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
       }
 
       setStdout("タイムアウト: 結果取得できず");
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        status: "タイムアウト",
+      });
       setRunStatus("error");
     } catch (error) {
-      setStdout(`実行エラー: ${error instanceof Error ? error.message : String(error)}`);
+      const message = `実行エラー: ${error instanceof Error ? error.message : String(error)}`;
+      setStdout(message);
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        message,
+        status: "エラー",
+      });
       setRunStatus("error");
     } finally {
       window.setTimeout(() => editorRef.current?.resize(), 20);
@@ -837,8 +1001,82 @@ export function JudgeWorkbench() {
   }, [aceMode, judgeSettings, runStatus, selectedLanguage, stdin]);
 
   useEffect(() => {
-    runRef.current = handleRun;
+    runRef.current = () => {
+      void handleRun();
+    };
   }, [handleRun]);
+
+  const handleSubmit = useCallback(async () => {
+    const editor = editorRef.current;
+    if (!editor || submitStatus === "submitting" || submitStatus === "polling") {
+      return;
+    }
+    if (!problem) {
+      const message = "提出するには問題一覧から対象問題を選択してください。";
+      setStdout(message);
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        message,
+        status: "提出不可",
+      });
+      setSubmitStatus("error");
+      return;
+    }
+
+    const selected = selectedLanguage || aceMode;
+    const parsedLanguageId = Number.parseInt(selected, 10);
+    const resolvedLanguageId = Number.isFinite(parsedLanguageId)
+      ? parsedLanguageId
+      : modeToLanguageId(selected);
+
+    try {
+      setSubmitStatus("submitting");
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        status: "提出中",
+      });
+      setStdout("提出中...");
+
+      let submission = await submitProblem({
+        languageId: resolvedLanguageId,
+        problemId: problem.id || undefined,
+        problemSlug: problem.slug,
+        sourceCode: editor.getValue(),
+      });
+      setSubmitStatus("polling");
+      setExecutionSummary(executionSummaryFromSubmission(submission));
+      setStdout(`submission #${submission.id}\n結果を取得中...`);
+
+      for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS && isPendingSubmission(submission); attempt += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
+        submission = await getSubmission(submission.id);
+        const summary = executionSummaryFromSubmission(submission);
+        setExecutionSummary(summary);
+        setStdout(outputText(summary) || `submission #${submission.id}\nstatus: ${submission.status}`);
+      }
+
+      if (isPendingSubmission(submission)) {
+        setSubmitStatus("error");
+        setExecutionSummary((current) => ({
+          ...current,
+          status: "タイムアウト",
+        }));
+        setStdout(`submission #${submission.id}\nタイムアウト: 結果取得できず`);
+        return;
+      }
+
+      setSubmitStatus(submission.status === "AC" ? "done" : "error");
+    } catch (error) {
+      const message = `提出エラー: ${error instanceof Error ? error.message : String(error)}`;
+      setSubmitStatus("error");
+      setExecutionSummary({
+        ...EMPTY_EXECUTION_SUMMARY,
+        message,
+        status: "エラー",
+      });
+      setStdout(message);
+    }
+  }, [aceMode, problem, selectedLanguage, submitStatus]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -865,37 +1103,6 @@ export function JudgeWorkbench() {
     setJudgeSettings(nextSettings);
     writeJson(JUDGE_SETTINGS_KEY, nextSettings);
     setSettingsOpen(false);
-  }
-
-  function startColumnResize(
-    event: ReactMouseEvent<HTMLDivElement>,
-    side: "left" | "right"
-  ) {
-    event.preventDefault();
-    const startX = event.clientX;
-    const startWidth = side === "left" ? leftWidth : rightWidth;
-
-    function onMove(moveEvent: MouseEvent) {
-      const delta = moveEvent.clientX - startX;
-      const nextWidth = side === "left" ? startWidth + delta : startWidth - delta;
-      const maxWidth = Math.max(MIN_PANEL_WIDTH, window.innerWidth * 0.7);
-      const clamped = Math.max(MIN_PANEL_WIDTH, Math.min(maxWidth, nextWidth));
-      if (side === "left") {
-        setLeftWidth(clamped);
-      } else {
-        setRightWidth(clamped);
-      }
-    }
-
-    function onUp() {
-      document.body.classList.remove("is-resizing");
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    }
-
-    document.body.classList.add("is-resizing");
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
   }
 
   function startIoResize(event: ReactMouseEvent<HTMLDivElement>) {
@@ -926,6 +1133,9 @@ export function JudgeWorkbench() {
 
   const isRunning = runStatus === "submitting" || runStatus === "polling";
   const runLabel = runStatus === "submitting" ? "送信中" : runStatus === "polling" ? "実行中" : "実行";
+  const isSubmitting = submitStatus === "submitting" || submitStatus === "polling";
+  const submitLabel =
+    submitStatus === "submitting" ? "提出中" : submitStatus === "polling" ? "採点中" : "提出";
   const statusLabel: Record<RunStatus, string> = {
     done: "完了",
     error: "エラー",
@@ -968,9 +1178,13 @@ export function JudgeWorkbench() {
           <div className="topbarSpacer" />
 
           <span className={`statusPill ${runStatus}`}>{statusLabel[runStatus]}</span>
-          <button className="runButton" type="button" disabled={isRunning} onClick={handleRun}>
+          <button className="runButton" type="button" disabled={isRunning} onClick={() => handleRun()}>
             {isRunning ? <Loader2 className="spin" size={16} /> : <Play size={16} />}
             <span>{runLabel}</span>
+          </button>
+          <button className="submitButton" type="button" disabled={isSubmitting} onClick={handleSubmit}>
+            {isSubmitting ? <Loader2 className="spin" size={16} /> : <Send size={16} />}
+            <span>{submitLabel}</span>
           </button>
           <button
             className="iconButton"
@@ -982,10 +1196,13 @@ export function JudgeWorkbench() {
           </button>
         </header>
 
-        <main className="workspace">
-          <aside
+        <PanelGroup className="workspace" orientation="horizontal">
+          <Panel
             className={`sidePanel problemPanel ${leftCollapsed ? "collapsed" : ""}`}
-            style={{ flexBasis: leftCollapsed ? 40 : leftWidth }}
+            collapsedSize={4}
+            collapsible
+            defaultSize={26}
+            minSize={14}
           >
             <PanelHeader
               collapsed={leftCollapsed}
@@ -997,25 +1214,28 @@ export function JudgeWorkbench() {
                 <ProblemPanelBody
                   error={problemError}
                   loading={problemLoading}
-                  problem={problem}
+                  problem={displayProblem}
                 />
               </div>
             )}
-          </aside>
+          </Panel>
 
-          <div className="colResizer" onMouseDown={(event) => startColumnResize(event, "left")} />
+          <PanelResizeHandle className="panelResizeHandle" />
 
-          <section className="centerPanel">
+          <Panel className="centerPanel" defaultSize={46} minSize={24}>
             <div ref={editorHostRef} className="editorHost">
               {!aceLoaded && <div className="editorFallback">Loading editor...</div>}
             </div>
-          </section>
+          </Panel>
 
-          <div className="colResizer" onMouseDown={(event) => startColumnResize(event, "right")} />
+          <PanelResizeHandle className="panelResizeHandle" />
 
-          <aside
+          <Panel
             className={`sidePanel ioPanel ${rightCollapsed ? "collapsed" : ""}`}
-            style={{ flexBasis: rightCollapsed ? 40 : rightWidth }}
+            collapsedSize={4}
+            collapsible
+            defaultSize={28}
+            minSize={18}
           >
             <PanelHeader
               collapsed={rightCollapsed}
@@ -1035,12 +1255,42 @@ export function JudgeWorkbench() {
                     onToggle={() => setInputCollapsed((value) => !value)}
                   />
                   {!inputCollapsed && (
-                    <textarea
-                      className="ioTextarea"
-                      value={stdin}
-                      onChange={(event) => setStdin(event.target.value)}
-                      placeholder="標準入力"
-                    />
+                    <div className="customInputArea">
+                      {samples.length > 0 ? (
+                        <div className="sampleControls">
+                          <span>サンプルテスト</span>
+                          <div className="sampleButtons">
+                            {samples.map((sample, index) => (
+                              <button
+                                className={selectedSampleIndex === index ? "active" : ""}
+                                key={sample.name}
+                                onClick={() => {
+                                  setSelectedSampleIndex(index);
+                                  setStdin(sample.input);
+                                }}
+                                type="button"
+                              >
+                                {sample.name}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            className="sampleRunButton"
+                            disabled={isRunning}
+                            onClick={() => handleRun(samples[selectedSampleIndex]?.input ?? stdin)}
+                            type="button"
+                          >
+                            {isRunning ? "実行中..." : "このサンプルで実行"}
+                          </button>
+                        </div>
+                      ) : null}
+                      <textarea
+                        className="ioTextarea customInputTextarea"
+                        value={stdin}
+                        onChange={(event) => setStdin(event.target.value)}
+                        placeholder="標準入力"
+                      />
+                    </div>
                   )}
                 </section>
 
@@ -1053,18 +1303,34 @@ export function JudgeWorkbench() {
                     onToggle={() => setOutputCollapsed((value) => !value)}
                   />
                   {!outputCollapsed && (
-                    <textarea
-                      className="ioTextarea outputTextarea"
-                      value={stdout}
-                      placeholder="標準出力"
-                      readOnly
-                    />
+                    <div className="outputArea">
+                      <div className="resultSummaryGrid">
+                        <div>
+                          <span>Status</span>
+                          <strong>{executionSummary.status}</strong>
+                        </div>
+                        <div>
+                          <span>Time</span>
+                          <strong>{executionSummary.time}</strong>
+                        </div>
+                        <div>
+                          <span>Memory</span>
+                          <strong>{executionSummary.memory}</strong>
+                        </div>
+                      </div>
+                      <textarea
+                        className="ioTextarea outputTextarea"
+                        value={stdout}
+                        placeholder="stdout / stderr / compile_output"
+                        readOnly
+                      />
+                    </div>
                   )}
                 </section>
               </div>
             )}
-          </aside>
-        </main>
+          </Panel>
+        </PanelGroup>
 
         {settingsOpen && (
           <SettingsDialog

@@ -12,6 +12,7 @@ type ProtectedPageProps = {
   authorize?: (user: CurrentUser) => boolean;
   children: (user: CurrentUser) => ReactNode;
   loadingLabel?: string;
+  showHeader?: boolean;
   unauthorizedRedirectTo?: string;
 };
 
@@ -19,6 +20,7 @@ export function ProtectedPage({
   authorize,
   children,
   loadingLabel = "認証状態を確認中",
+  showHeader = true,
   unauthorizedRedirectTo = "/dashboard",
 }: ProtectedPageProps) {
   const router = useRouter();
@@ -65,7 +67,7 @@ export function ProtectedPage({
 
   return (
     <div className="min-h-dvh bg-zinc-50 text-zinc-950">
-      <Header user={user} />
+      {showHeader ? <Header user={user} /> : null}
       {children(user)}
     </div>
   );
