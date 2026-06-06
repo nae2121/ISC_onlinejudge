@@ -22,6 +22,8 @@ import type {
   RunStatus,
   ThemeName
 } from "@/components/types";
+import type { Problem } from "@/lib/api";
+import { getProblem } from "@/lib/api";
 
 type AceEditor = {
   commands?: {
@@ -398,6 +400,80 @@ function registerGenericCompleter() {
   });
 }
 
+function problemSlugFromLocation() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return new URLSearchParams(window.location.search).get("problem")?.trim() ?? "";
+}
+
+function formatTimeLimit(ms: number) {
+  const seconds = ms / 1000;
+  return `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
+}
+
+function ProblemPanelBody({
+  error,
+  loading,
+  problem,
+}: {
+  error: string;
+  loading: boolean;
+  problem: Problem | null;
+}) {
+  if (loading) {
+    return <div className="problemNotice">問題を読み込み中...</div>;
+  }
+
+  if (error) {
+    return <div className="problemNotice error">{error}</div>;
+  }
+
+  if (!problem) {
+    return <pre className="problemStatement">{PROBLEM_TEXT}</pre>;
+  }
+
+  return (
+    <div className="problemContent">
+      <div>
+        <p className="problemKicker">{problem.slug}</p>
+        <h2 className="problemTitle">{problem.title}</h2>
+      </div>
+
+      <div className="problemMetaGrid">
+        <div className="problemMetaItem">
+          <span>得点</span>
+          <strong>{problem.score} pts</strong>
+        </div>
+        <div className="problemMetaItem">
+          <span>時間制限</span>
+          <strong>{formatTimeLimit(problem.timeLimitMs)}</strong>
+        </div>
+        <div className="problemMetaItem">
+          <span>メモリ制限</span>
+          <strong>{problem.memoryLimitMb} MB</strong>
+        </div>
+      </div>
+
+      {problem.tags.length > 0 ? (
+        <div className="problemTags">
+          {problem.tags.map((tag) => (
+            <span className="problemTag" key={tag}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <section className="problemSection">
+        <h3>問題文</h3>
+        <pre className="problemStatement">{problem.statement || "問題文はまだ登録されていません。"}</pre>
+      </section>
+    </div>
+  );
+}
+
 export function JudgeWorkbench() {
   const editorHostRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<AceEditor | null>(null);
@@ -423,6 +499,9 @@ export function JudgeWorkbench() {
   const [stdin, setStdin] = useState("");
   const [stdout, setStdout] = useState("");
   const [runStatus, setRunStatus] = useState<RunStatus>("idle");
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [problemLoading, setProblemLoading] = useState(false);
+  const [problemError, setProblemError] = useState("");
   const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT_WIDTH);
   const [rightWidth, setRightWidth] = useState(DEFAULT_RIGHT_WIDTH);
   const [inputHeight, setInputHeight] = useState(DEFAULT_INPUT_HEIGHT);
@@ -439,6 +518,49 @@ export function JudgeWorkbench() {
     () => guessAceModeFromJudge0Name(languageName(selectedLanguageMeta)),
     [selectedLanguageMeta]
   );
+
+  useEffect(() => {
+    const slug = problemSlugFromLocation();
+
+    if (!slug) {
+      setProblem(null);
+      setProblemLoading(false);
+      setProblemError("");
+      return;
+    }
+
+    let ignore = false;
+    setProblemLoading(true);
+    setProblemError("");
+
+    getProblem(slug)
+      .then((nextProblem) => {
+        if (ignore) {
+          return;
+        }
+        setProblem(nextProblem);
+        if (!nextProblem) {
+          setProblemError("問題が見つかりません。");
+        }
+      })
+      .catch((error) => {
+        if (!ignore) {
+          setProblem(null);
+          setProblemError(
+            `問題を取得できませんでした: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setProblemLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     const appSettings = readJson<AppSettings>(APP_SETTINGS_KEY, {});
@@ -870,7 +992,15 @@ export function JudgeWorkbench() {
               label="Problem"
               onToggle={() => setLeftCollapsed((value) => !value)}
             />
-            {!leftCollapsed && <pre className="problemBody">{PROBLEM_TEXT}</pre>}
+            {!leftCollapsed && (
+              <div className="problemBody">
+                <ProblemPanelBody
+                  error={problemError}
+                  loading={problemLoading}
+                  problem={problem}
+                />
+              </div>
+            )}
           </aside>
 
           <div className="colResizer" onMouseDown={(event) => startColumnResize(event, "left")} />
