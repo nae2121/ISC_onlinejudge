@@ -36,13 +36,13 @@ export function IOPanel({
   submitResult,
 }: IOPanelProps) {
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col bg-[#0d1117]">
-      <div className="flex min-h-11 items-center border-b border-[#30363d] bg-[#161b22] px-3">
+    <div className="flex h-full min-h-0 min-w-0 flex-col bg-white dark:bg-[#0d1117]">
+      <div className="flex min-h-11 items-center border-b border-zinc-200 bg-zinc-50 px-3 dark:border-[#30363d] dark:bg-[#161b22]">
         <button
           className={`h-11 border-b-2 px-3 text-sm ${
             activeTab === "tests"
-              ? "border-blue-500 text-[#e6edf3]"
-              : "border-transparent text-[#8b949e] hover:text-[#e6edf3]"
+              ? "border-teal-600 text-zinc-950 dark:border-blue-500 dark:text-[#e6edf3]"
+              : "border-transparent text-zinc-500 hover:text-zinc-950 dark:text-[#8b949e] dark:hover:text-[#e6edf3]"
           }`}
           onClick={() => onChangeTab("tests")}
           type="button"
@@ -52,8 +52,8 @@ export function IOPanel({
         <button
           className={`h-11 border-b-2 px-3 text-sm ${
             activeTab === "custom"
-              ? "border-blue-500 text-[#e6edf3]"
-              : "border-transparent text-[#8b949e] hover:text-[#e6edf3]"
+              ? "border-teal-600 text-zinc-950 dark:border-blue-500 dark:text-[#e6edf3]"
+              : "border-transparent text-zinc-500 hover:text-zinc-950 dark:text-[#8b949e] dark:hover:text-[#e6edf3]"
           }`}
           onClick={() => onChangeTab("custom")}
           type="button"
@@ -62,7 +62,7 @@ export function IOPanel({
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 [scrollbar-color:#30363d_transparent] [scrollbar-width:thin]">
+      <div className="min-h-0 flex-1 overflow-y-auto p-3 [scrollbar-color:#d4d4d8_transparent] [scrollbar-width:thin] dark:[scrollbar-color:#30363d_transparent]">
         {activeTab === "tests" ? (
           <div className="grid gap-3">
             <SampleCaseAccordion
@@ -71,7 +71,7 @@ export function IOPanel({
               samples={samples}
             />
             <button
-              className="inline-flex h-9 w-fit items-center gap-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-300 hover:bg-emerald-500/20 disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex h-9 w-fit items-center gap-2 rounded border border-teal-200 bg-teal-50 px-3 text-sm font-medium text-teal-700 hover:bg-teal-100 disabled:cursor-wait disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
               disabled={isRunning || samples.length === 0}
               onClick={onRunSample}
               type="button"
@@ -83,13 +83,13 @@ export function IOPanel({
         ) : (
           <div className="grid gap-3">
             <textarea
-              className="min-h-48 resize-y rounded border border-[#30363d] bg-[#010409] p-3 font-mono text-sm leading-6 text-[#e6edf3] outline-none focus:border-blue-500"
+              className="min-h-48 resize-y rounded border border-zinc-200 bg-white p-3 font-mono text-sm leading-6 text-zinc-800 outline-none focus:border-teal-600 dark:border-[#30363d] dark:bg-[#010409] dark:text-[#e6edf3] dark:focus:border-blue-500"
               onChange={(event) => onChangeCustomInput(event.target.value)}
               spellCheck={false}
               value={customInput}
             />
             <button
-              className="inline-flex h-9 w-fit items-center gap-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-300 hover:bg-emerald-500/20 disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex h-9 w-fit items-center gap-2 rounded border border-teal-200 bg-teal-50 px-3 text-sm font-medium text-teal-700 hover:bg-teal-100 disabled:cursor-wait disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
               disabled={isRunning}
               onClick={onRunCustom}
               type="button"

@@ -2,6 +2,7 @@ import { Code2, Gauge, ListChecks, ShieldCheck, UserCircle } from "lucide-react"
 import Link from "next/link";
 import type { CurrentUser } from "@/lib/api";
 import { isAdminUser } from "@/lib/api";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 
 export function Header({ user }: { user: CurrentUser }) {
@@ -44,6 +45,7 @@ export function Header({ user }: { user: CurrentUser }) {
             </Link>
           ) : null}
         </nav>
+        <ThemeToggle />
         <UserMenu user={user} />
       </div>
     </header>
