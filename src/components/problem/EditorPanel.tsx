@@ -117,8 +117,20 @@ export function EditorPanel({
     const appSettings = readJson<AppSettings>(APP_SETTINGS_KEY, {});
     setFontSize(typeof appSettings.font === "number" ? appSettings.font : 14);
     setLiveAutocomplete(!!appSettings.live);
-    setTheme(appSettings.theme ?? "dark");
+    setTheme(resolveInitialTheme(appSettings.theme));
     setSettingsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    const handleThemeChange = (event: Event) => {
+      const nextTheme = (event as CustomEvent<ThemeName>).detail;
+      if (nextTheme === "dark" || nextTheme === "light") {
+        setTheme(nextTheme);
+      }
+    };
+
+    window.addEventListener("wfj:theme-change", handleThemeChange);
+    return () => window.removeEventListener("wfj:theme-change", handleThemeChange);
   }, []);
 
   useEffect(() => {
@@ -217,6 +229,7 @@ export function EditorPanel({
 
   useEffect(() => {
     editorRef.current?.setTheme(theme === "dark" ? "ace/theme/monokai" : "ace/theme/github");
+    document.documentElement.classList.toggle("dark", theme === "dark");
     if (!settingsLoaded) return;
     writeJson<AppSettings>(APP_SETTINGS_KEY, {
       ...readJson<AppSettings>(APP_SETTINGS_KEY, {}),
@@ -284,6 +297,16 @@ export function EditorPanel({
     setSettingsOpen(false);
   }
 
+  function handleSetTheme(nextTheme: ThemeName) {
+    setTheme(nextTheme);
+    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    writeJson<AppSettings>(APP_SETTINGS_KEY, {
+      ...readJson<AppSettings>(APP_SETTINGS_KEY, {}),
+      theme: nextTheme,
+    });
+    window.dispatchEvent(new CustomEvent<ThemeName>("wfj:theme-change", { detail: nextTheme }));
+  }
+
   function handleAceReady() {
     setAceLoaded(true);
   }
@@ -293,7 +316,7 @@ export function EditorPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col bg-[#0d1117]">
+    <div className="flex h-full min-h-0 min-w-0 flex-col bg-white dark:bg-[#0d1117]">
       <Script
         src={`${ACE_CDN}/ace.js`}
         strategy="afterInteractive"
@@ -308,9 +331,9 @@ export function EditorPanel({
           onReady={handleLanguageToolsReady}
         />
       ) : null}
-      <div className="flex min-h-11 min-w-0 items-center gap-2 border-b border-[#30363d] bg-[#161b22] px-3">
+      <div className="flex min-h-11 min-w-0 items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-3 dark:border-[#30363d] dark:bg-[#161b22]">
         <select
-          className="h-8 min-w-0 rounded border border-[#30363d] bg-[#0d1117] px-3 text-sm text-[#e6edf3] outline-none focus:border-blue-500"
+          className="h-8 min-w-0 rounded border border-zinc-200 bg-white px-3 text-sm text-zinc-800 outline-none focus:border-teal-600 dark:border-[#30363d] dark:bg-[#0d1117] dark:text-[#e6edf3] dark:focus:border-blue-500"
           onChange={(event) => onChangeLanguage(Number(event.target.value))}
           value={languageId}
         >
@@ -326,7 +349,7 @@ export function EditorPanel({
         </select>
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <button
-            className="inline-flex h-8 items-center gap-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-300 hover:bg-emerald-500/20 disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex h-8 items-center gap-2 rounded border border-teal-200 bg-teal-50 px-3 text-sm font-medium text-teal-700 hover:bg-teal-100 disabled:cursor-wait disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
             disabled={isRunning}
             onClick={onRun}
             type="button"
@@ -344,7 +367,7 @@ export function EditorPanel({
             {isSubmitting ? "提出中..." : "提出"}
           </button>
           <button
-            className="inline-flex h-8 w-8 items-center justify-center rounded border border-[#30363d] text-[#8b949e] hover:bg-[#21262d] hover:text-[#e6edf3]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#30363d] dark:text-[#8b949e] dark:hover:bg-[#21262d] dark:hover:text-[#e6edf3]"
             onClick={() => onChangeCode(cppInitialCode)}
             title="初期コードに戻す"
             type="button"
@@ -352,7 +375,7 @@ export function EditorPanel({
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
           </button>
           <button
-            className="inline-flex h-8 w-8 items-center justify-center rounded border border-[#30363d] text-[#8b949e] hover:bg-[#21262d] hover:text-[#e6edf3]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#30363d] dark:text-[#8b949e] dark:hover:bg-[#21262d] dark:hover:text-[#e6edf3]"
             onClick={() => setSettingsOpen(true)}
             title="Settings"
             type="button"
@@ -365,7 +388,7 @@ export function EditorPanel({
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <div ref={editorHostRef} className="absolute inset-0" />
         {!aceLoaded ? (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-[#8b949e]">
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-zinc-500 dark:text-[#8b949e]">
             ACE editor loading...
           </div>
         ) : null}
@@ -379,7 +402,7 @@ export function EditorPanel({
           onSave={saveJudgeSettings}
           onSetFontSize={setFontSize}
           onSetLiveAutocomplete={setLiveAutocomplete}
-          onSetTheme={setTheme}
+          onSetTheme={handleSetTheme}
         />
       ) : null}
     </div>
@@ -419,6 +442,23 @@ function writeJson<T>(key: string, value: T) {
   } catch {
     // Keep the editor usable when localStorage is unavailable.
   }
+}
+
+function resolveInitialTheme(theme?: ThemeName): ThemeName {
+  if (theme === "dark" || theme === "light") {
+    return theme;
+  }
+
+  if (typeof window !== "undefined") {
+    if (document.documentElement.classList.contains("dark")) {
+      return "dark";
+    }
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+  }
+
+  return "light";
 }
 
 function guessAceModeFromJudge0Name(name: string) {

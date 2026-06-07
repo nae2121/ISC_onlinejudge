@@ -174,7 +174,7 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
   }, [code, languageId, problem]);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[#0d1117] text-[#e6edf3]">
+    <div className="flex h-screen flex-col overflow-hidden bg-zinc-50 text-zinc-950 dark:bg-[#0d1117] dark:text-[#e6edf3]">
       <ProblemHeader problem={problem} user={user} />
 
       <PanelGroup
@@ -183,7 +183,7 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
         orientation="horizontal"
       >
         <Panel
-          className="min-h-0 min-w-0 border-r border-[#30363d] bg-[#0d1117]"
+          className="min-h-0 min-w-0 border-r border-zinc-200 bg-white dark:border-[#30363d] dark:bg-[#0d1117]"
           defaultSize="35%"
           id="problem"
           maxSize="55%"
@@ -191,9 +191,9 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
         >
           <ProblemPanel loading={loading} problem={problem} />
         </Panel>
-        <PanelResizeHandle className="w-1 bg-[#30363d] transition-colors hover:bg-blue-500" />
+        <PanelResizeHandle className="w-1 bg-zinc-200 transition-colors hover:bg-teal-500 dark:bg-[#30363d] dark:hover:bg-blue-500" />
         <Panel
-          className="min-h-0 min-w-0 bg-[#0d1117]"
+          className="min-h-0 min-w-0 bg-white dark:bg-[#0d1117]"
           defaultSize="30%"
           id="editor"
           maxSize="46%"
@@ -212,9 +212,9 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
             onSubmit={handleSubmit}
           />
         </Panel>
-        <PanelResizeHandle className="w-1 bg-[#30363d] transition-colors hover:bg-blue-500" />
+        <PanelResizeHandle className="w-1 bg-zinc-200 transition-colors hover:bg-teal-500 dark:bg-[#30363d] dark:hover:bg-blue-500" />
         <Panel
-          className="min-h-0 min-w-0 border-l border-[#30363d] bg-[#0d1117]"
+          className="min-h-0 min-w-0 border-l border-zinc-200 bg-white dark:border-[#30363d] dark:bg-[#0d1117]"
           defaultSize="35%"
           id="io"
           maxSize="55%"
