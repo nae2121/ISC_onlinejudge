@@ -6,13 +6,39 @@ export type CurrentUser = {
   displayName: string;
   email: string;
   role: UserRole;
+  status: AdminUserStatus;
+  isActive: boolean;
   rating: number;
   solvedCount: number;
   submissionsCount: number;
 };
 
+export type AdminUserStatus = "pending" | "active" | "suspended";
+
+export type AdminUser = {
+  id: number;
+  username: string;
+  displayName: string;
+  email: string;
+  role: UserRole;
+  status: AdminUserStatus;
+  isActive: boolean;
+  approvedAt?: string;
+  approvedBy?: number;
+  pinVerifiedAt?: string;
+  createdAt?: string;
+};
+
 export function isAdminUser(user: Pick<CurrentUser, "role"> | null | undefined) {
   return user?.role === "admin";
+}
+
+export function isApprovedUser(
+  user: Pick<CurrentUser, "isActive" | "role" | "status"> | null | undefined
+) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return user.status === "active" && user.isActive;
 }
 
 export type Problem = {
@@ -75,6 +101,7 @@ export type RegisterInput = {
   displayName: string;
   email: string;
   password: string;
+  pinCode: string;
 };
 
 class ApiError extends Error {
@@ -97,7 +124,13 @@ export async function login(input: LoginInput) {
 export async function register(input: RegisterInput) {
   const user = await apiRequest<unknown>("/api/auth/register", {
     method: "POST",
-    body: JSON.stringify(input),
+    body: JSON.stringify({
+      username: input.username,
+      display_name: input.displayName,
+      email: input.email,
+      password: input.password,
+      pin_code: input.pinCode,
+    }),
   });
   return normalizeUser(user);
 }
@@ -177,6 +210,39 @@ export async function getSubmission(id: number) {
   return normalizeSubmission(submission);
 }
 
+export async function getAdminUsers() {
+  const payload = await apiRequest<unknown>("/api/admin/users");
+  const source = objectValue(payload);
+  const users = Array.isArray(payload)
+    ? payload
+    : Array.isArray(source.users)
+      ? source.users
+      : [];
+  return users.map(normalizeAdminUser);
+}
+
+export async function approveAdminUser(id: number) {
+  return updateAdminUserActive(id, true);
+}
+
+export async function updateAdminUserActive(id: number, isActive: boolean) {
+  const user = await apiRequest<unknown>(`/api/admin/users/${encodeURIComponent(String(id))}/active`, {
+    method: "PATCH",
+    body: JSON.stringify({ is_active: isActive }),
+  });
+  return normalizeAdminUser(user);
+}
+
+export async function changeAdminUserPassword(id: number, password: string) {
+  return apiRequest<{ message?: string }>(
+    `/api/admin/users/${encodeURIComponent(String(id))}/password`,
+    {
+      method: "POST",
+      body: JSON.stringify({ password }),
+    }
+  );
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
   const response = await fetch(path, {
     ...init,
@@ -217,12 +283,20 @@ async function errorMessage(response: Response) {
 
 function normalizeUser(value: unknown): CurrentUser {
   const source = unwrapUser(value);
+  const role = roleValue(source.role);
+  const isActive = role === "admin"
+    ? true
+    : booleanValue(source.is_active ?? source.isActive, true);
   return {
     id: numberValue(source.id, 0),
     username: stringValue(source.username, ""),
     displayName: stringValue(source.display_name ?? source.displayName, ""),
     email: stringValue(source.email, ""),
-    role: roleValue(source.role),
+    role,
+    status: role === "admin"
+      ? "active"
+      : adminUserStatusValue(source.status, isActive ? "active" : "pending"),
+    isActive,
     rating: numberValue(source.rating, 0),
     solvedCount: numberValue(source.solved_count ?? source.solvedCount, 0),
     submissionsCount: numberValue(source.submissions_count ?? source.submissionsCount, 0),
@@ -277,6 +351,32 @@ function normalizeSubmission(value: unknown): Submission {
     maxTimeMs: numberValue(source.max_time_ms ?? source.maxTimeMs, 0),
     maxMemoryKb: numberValue(source.max_memory_kb ?? source.maxMemoryKb, 0),
     submittedAt: stringValue(source.submitted_at ?? source.submittedAt, new Date().toISOString()),
+  };
+}
+
+function normalizeAdminUser(value: unknown): AdminUser {
+  const source = objectValue(value);
+  const user = objectValue(source.user);
+  const target = Object.keys(user).length > 0 ? user : source;
+  const role = roleValue(target.role);
+  const isActive = role === "admin"
+    ? true
+    : booleanValue(target.is_active ?? target.isActive, false);
+
+  return {
+    id: numberValue(target.id, 0),
+    username: stringValue(target.username, ""),
+    displayName: stringValue(target.display_name ?? target.displayName, ""),
+    email: stringValue(target.email, ""),
+    role,
+    status: role === "admin"
+      ? "active"
+      : adminUserStatusValue(target.status, isActive ? "active" : "pending"),
+    isActive,
+    approvedAt: optionalString(target.approved_at ?? target.approvedAt),
+    approvedBy: optionalNumber(target.approved_by ?? target.approvedBy),
+    pinVerifiedAt: optionalString(target.pin_verified_at ?? target.pinVerifiedAt),
+    createdAt: optionalString(target.created_at ?? target.createdAt),
   };
 }
 
@@ -338,6 +438,10 @@ function numberValue(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function optionalNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
 function booleanValue(value: unknown, fallback: boolean) {
   return typeof value === "boolean" ? value : fallback;
 }
@@ -373,4 +477,13 @@ function statusValue(value: unknown): SubmissionStatus {
     value === "WJ"
     ? value
     : "WJ";
+}
+
+function adminUserStatusValue(
+  value: unknown,
+  fallback: AdminUserStatus = "pending"
+): AdminUserStatus {
+  return value === "pending" || value === "active" || value === "suspended"
+    ? value
+    : fallback;
 }

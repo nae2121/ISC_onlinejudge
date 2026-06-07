@@ -143,6 +143,7 @@ type CreateUserParams struct {
 	Email        string
 	PasswordHash string
 	Role         string
+	IsActive     bool
 }
 
 type UpdateUserProfileParams struct {

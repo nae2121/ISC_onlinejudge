@@ -32,7 +32,7 @@ func main() {
 	store := repository.NewStore(pool)
 	problemService := service.NewProblemService(store)
 	submissionService := service.NewSubmissionService(store, cfg.DefaultPriority)
-	authService := service.NewAuthService(store, cfg.SessionTTL)
+	authService := service.NewAuthService(store, cfg.SessionTTL, cfg.RegistrationPin)
 	userService := service.NewUserService(store)
 	server := handler.NewServer(problemService, submissionService, authService, userService)
 

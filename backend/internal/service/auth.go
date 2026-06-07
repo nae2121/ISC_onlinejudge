@@ -25,6 +25,7 @@ var (
 	ErrInactiveUser          = errors.New("user is inactive")
 	ErrInvalidCredentials    = errors.New("invalid username/email or password")
 	ErrInvalidInput          = errors.New("invalid input")
+	ErrInvalidPinCode        = errors.New("invalid pin code")
 	ErrInvalidSession        = errors.New("invalid session")
 	ErrTooManyLoginAttempts  = errors.New("too many login attempts")
 	ErrUnsupportedRole       = errors.New("unsupported role")
@@ -36,6 +37,7 @@ var usernamePattern = regexp.MustCompile(`^[A-Za-z0-9_][A-Za-z0-9_-]{2,31}$`)
 type AuthService struct {
 	store            *repository.Store
 	sessionTTL       time.Duration
+	registrationPin string
 	failureMu        sync.Mutex
 	failures         map[string]loginFailure
 	maxFailures      int
@@ -53,6 +55,7 @@ type RegisterInput struct {
 	DisplayName string
 	Email       string
 	Password    string
+	PinCode     string
 	UserAgent   string
 	IPAddress   string
 }
@@ -70,10 +73,11 @@ type AuthResult struct {
 	ExpiresAt time.Time
 }
 
-func NewAuthService(store *repository.Store, sessionTTL time.Duration) *AuthService {
+func NewAuthService(store *repository.Store, sessionTTL time.Duration, registrationPin string) *AuthService {
 	return &AuthService{
 		store:            store,
 		sessionTTL:       sessionTTL,
+		registrationPin: strings.TrimSpace(registrationPin),
 		failures:         make(map[string]loginFailure),
 		maxFailures:      5,
 		loginLockoutTime: 15 * time.Minute,
@@ -94,6 +98,9 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthRe
 	if len(displayName) > 80 || len(input.Password) < 8 {
 		return AuthResult{}, ErrInvalidInput
 	}
+	if s.registrationPin == "" || strings.TrimSpace(input.PinCode) != s.registrationPin {
+		return AuthResult{}, ErrInvalidPinCode
+	}
 	address, err := mail.ParseAddress(email)
 	if err != nil || address.Address != email {
 		return AuthResult{}, ErrInvalidInput
@@ -110,6 +117,7 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthRe
 		Email:        email,
 		PasswordHash: string(hash),
 		Role:         repository.RoleUser,
+		IsActive:     false,
 	})
 	if isUniqueViolation(err) {
 		return AuthResult{}, ErrDuplicateUser
@@ -117,7 +125,11 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthRe
 	if err != nil {
 		return AuthResult{}, err
 	}
-	return s.createSession(ctx, user, input.UserAgent, input.IPAddress)
+	return AuthResult{User: user}, nil
+}
+
+func (s *AuthService) RegistrationPinCode() string {
+	return s.registrationPin
 }
 
 func (s *AuthService) Login(ctx context.Context, input LoginInput) (AuthResult, error) {

@@ -9,8 +9,8 @@ import (
 
 func (s *Store) CreateUser(ctx context.Context, params CreateUserParams) (User, error) {
 	row := s.pool.QueryRow(ctx, `
-INSERT INTO users (username, display_name, email, password_hash, role)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (username, display_name, email, password_hash, role, is_active)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, username, display_name, email, password_hash, role, rating, bio,
           icon_url, is_active, email_verified_at, created_at, updated_at`,
 		params.Username,
@@ -18,6 +18,7 @@ RETURNING id, username, display_name, email, password_hash, role, rating, bio,
 		params.Email,
 		params.PasswordHash,
 		params.Role,
+		params.IsActive,
 	)
 	return scanUser(row)
 }

@@ -50,6 +50,7 @@ func (s *Server) Routes() http.Handler {
 	mux.Handle("/api/me/submissions", s.requireAuth(http.HandlerFunc(s.handleMeSubmissions)))
 	mux.Handle("/api/admin/users", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUsers)))
 	mux.Handle("/api/admin/users/", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUserDetail)))
+	mux.Handle("/api/admin/registration-pin", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminRegistrationPin)))
 	mux.HandleFunc("/api/problems", s.handleProblems)
 	mux.HandleFunc("/api/problems/", s.handleProblemDetail)
 	mux.HandleFunc("/api/languages", s.handleLanguages)
