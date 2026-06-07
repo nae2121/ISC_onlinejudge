@@ -18,6 +18,7 @@ type Config struct {
 	DefaultTimeLimit  time.Duration
 	DefaultMemoryKB   int
 	DefaultPriority   int
+	RegistrationPin   string
 	SessionTTL        time.Duration
 }
 
@@ -34,6 +35,7 @@ func Load() Config {
 		DefaultTimeLimit: durationEnv("DEFAULT_TIME_LIMIT", 2*time.Second),
 		DefaultMemoryKB:  intEnv("DEFAULT_MEMORY_KB", 256000),
 		DefaultPriority:  intEnv("DEFAULT_JOB_PRIORITY", 0),
+		RegistrationPin:  env("APP_REGISTRATION_PIN_CODE", "1234"),
 		SessionTTL:       durationEnv("SESSION_TTL", 7*24*time.Hour),
 	}
 }

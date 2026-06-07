@@ -4,6 +4,7 @@ import {
   ClipboardList,
   FileCode2,
   History,
+  KeyRound,
   ListChecks,
   type LucideIcon,
   ServerCog,
@@ -12,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ProtectedPage } from "@/components/ProtectedPage";
 import type { CurrentUser } from "@/lib/api";
 import { isAdminUser } from "@/lib/api";
@@ -75,6 +77,31 @@ export default function AdminPage() {
 }
 
 function AdminContent({ user }: { user: CurrentUser }) {
+  const [registrationPin, setRegistrationPin] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+
+    fetch("/api/admin/registration-pin", {
+      cache: "no-store",
+      credentials: "include",
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: unknown) => {
+        if (ignore || !payload || typeof payload !== "object") return;
+        const source = payload as { pin_code?: unknown; pinCode?: unknown };
+        const pin = source.pin_code ?? source.pinCode;
+        if (typeof pin === "string") {
+          setRegistrationPin(pin);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6">
       <section className="flex flex-col justify-between gap-4 rounded-md border border-zinc-200 bg-white p-5 shadow-sm md:flex-row md:items-center">
@@ -90,13 +117,20 @@ function AdminContent({ user }: { user: CurrentUser }) {
             @{user.username} / {user.displayName}
           </p>
         </div>
-        <Link
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
-          href="/dashboard"
-        >
-          <ListChecks className="h-4 w-4" aria-hidden="true" />
-          Dashboard
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex h-10 items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-700">
+            <KeyRound className="h-4 w-4 text-teal-700" aria-hidden="true" />
+            <span>PIN</span>
+            <code className="font-mono text-zinc-950">{registrationPin || "-"}</code>
+          </div>
+          <Link
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+            href="/dashboard"
+          >
+            <ListChecks className="h-4 w-4" aria-hidden="true" />
+            Dashboard
+          </Link>
+        </div>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

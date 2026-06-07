@@ -18,7 +18,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [pinCode, setPinCode] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -36,18 +38,25 @@ export function AuthForm({ mode }: AuthFormProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setSuccess("");
     setSubmitting(true);
 
     try {
       if (mode === "login") {
         await login({ identity, password });
+        router.replace("/dashboard");
+        router.refresh();
       } else {
-        await register({ username, displayName, email, password });
+        await register({ username, displayName, email, password, pinCode });
+        setUsername("");
+        setDisplayName("");
+        setEmail("");
+        setPassword("");
+        setPinCode("");
+        setSuccess("登録申請を受け付けました。管理者の承認後にログインできます。");
       }
-      router.replace("/dashboard");
-      router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "認証に失敗しました");
+      setError(authErrorMessage(cause));
     } finally {
       setSubmitting(false);
     }
@@ -119,6 +128,15 @@ export function AuthForm({ mode }: AuthFormProps) {
                     value={email}
                   />
                 </label>
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-zinc-700">pin code</span>
+                  <input
+                    className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+                    onChange={(event) => setPinCode(event.target.value)}
+                    required
+                    value={pinCode}
+                  />
+                </label>
               </>
             )}
 
@@ -138,6 +156,12 @@ export function AuthForm({ mode }: AuthFormProps) {
           {error ? (
             <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
               {error}
+            </p>
+          ) : null}
+
+          {success ? (
+            <p className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              {success}
             </p>
           ) : null}
 
@@ -165,4 +189,15 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
     </main>
   );
+}
+
+function authErrorMessage(cause: unknown) {
+  const message = cause instanceof Error ? cause.message : "";
+  if (message.includes("invalid pin code")) {
+    return "PINコードが正しくありません。";
+  }
+  if (message.includes("user is inactive")) {
+    return "このアカウントは承認待ちです。管理者の承認後にログインできます。";
+  }
+  return message || "認証に失敗しました";
 }

@@ -23,9 +23,10 @@ func (s *Server) handleAuthRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := s.auth.Register(r.Context(), service.RegisterInput{
 		Username:    req.Username,
-		DisplayName: req.DisplayName,
+		DisplayName: req.displayName(),
 		Email:       req.Email,
 		Password:    req.Password,
+		PinCode:     req.pinCode(),
 		UserAgent:   r.UserAgent(),
 		IPAddress:   clientIP(r),
 	})
@@ -34,8 +35,17 @@ func (s *Server) handleAuthRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setSessionCookie(w, result.Token, result.ExpiresAt)
 	writeJSON(w, http.StatusCreated, authResponse{User: toCurrentUserResponse(result.User)})
+}
+
+func (s *Server) handleAdminRegistrationPin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{
+		"pin_code": s.auth.RegistrationPinCode(),
+	})
 }
 
 func (s *Server) handleAuthLogin(w http.ResponseWriter, r *http.Request) {
@@ -197,6 +207,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		writeError(w, http.StatusNotFound, "not found")
 	case errors.Is(err, service.ErrInvalidInput):
 		writeError(w, http.StatusBadRequest, err.Error())
+	case errors.Is(err, service.ErrInvalidPinCode):
+		writeError(w, http.StatusBadRequest, err.Error())
 	case errors.Is(err, service.ErrDuplicateUser):
 		writeError(w, http.StatusConflict, err.Error())
 	case errors.Is(err, service.ErrInvalidCredentials):
@@ -217,10 +229,27 @@ func writeServiceError(w http.ResponseWriter, err error) {
 }
 
 type registerRequest struct {
-	Username    string `json:"username"`
-	DisplayName string `json:"display_name"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
+	Username         string `json:"username"`
+	DisplayName      string `json:"display_name"`
+	DisplayNameCamel string `json:"displayName"`
+	Email            string `json:"email"`
+	Password         string `json:"password"`
+	PinCode          string `json:"pin_code"`
+	PinCodeCamel     string `json:"pinCode"`
+}
+
+func (r registerRequest) displayName() string {
+	if r.DisplayName != "" {
+		return r.DisplayName
+	}
+	return r.DisplayNameCamel
+}
+
+func (r registerRequest) pinCode() string {
+	if r.PinCode != "" {
+		return r.PinCode
+	}
+	return r.PinCodeCamel
 }
 
 type loginRequest struct {
