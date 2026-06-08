@@ -107,9 +107,7 @@ make backend-test
 
 ## 注意
 
-`judge-worker` は構造だけ先に作ってあり、現在の sandbox は `StubSandbox` です。
-このまま Worker を起動すると採点ジョブは `IE` になります。
+`judge-worker` は `JUDGE0_URL` の Judge0 core API に提出して採点します。
+Docker Compose では `JUDGE0_URL=http://server:2358` を渡しているため、公開テストケースと hidden テストケースの両方を worker が順番に実行し、すべて AC のときだけ提出全体を `AC` にします。
 
-次に決めるべきことは、実行環境を Docker で作るか isolate で作るかです。
-Docker は導入しやすい一方で、権限・seccomp・ネットワーク遮断・出力制限を丁寧に設定する必要があります。
-isolate は競技プログラミング用途に近いですが、環境構築の前提が少し重くなります。
+将来、Docker / isolate などの別実行環境に切り替える場合は `judge.Sandbox` interface の実装を差し替えます。

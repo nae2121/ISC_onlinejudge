@@ -257,6 +257,27 @@ def poll_result(
         time.sleep(poll_interval)
 
 
+def fetch_judge0_result(token: str, query_params: dict = None):
+    r = http_request(
+        'get',
+        f"{JUDGE0_URL}/submissions/{token}",
+        params=query_params or {},
+        timeout=10)
+    r.raise_for_status()
+    j = r.json()
+    status_id = j.get("status", {}).get("id", 0)
+    finished = status_id not in (1, 2)
+    j_copy = dict(j)
+    j_copy["decoded_stdout"] = _maybe_base64_decode(j.get("stdout"))
+    j_copy["decoded_stderr"] = _maybe_base64_decode(j.get("stderr"))
+    j_copy["decoded_compile_output"] = _maybe_base64_decode(
+        j.get("compile_output"))
+    j_copy["stdout"] = j_copy["decoded_stdout"]
+    j_copy["stderr"] = j_copy["decoded_stderr"]
+    j_copy["compile_output"] = j_copy["decoded_compile_output"]
+    return finished, j_copy
+
+
 @app.route("/")
 def index():
     # list recent 10
@@ -557,24 +578,32 @@ def api_result(token):
     If token is unknown locally, fetch once from Judge0 and decode before returning.
     """
     meta = _get_task(token)
+    query_params = meta.get("query_params", {}) if isinstance(meta, dict) else {}
+    should_fetch = (
+        not meta or
+        not isinstance(meta.get("result"), dict) or
+        not meta.get("done"))
+
+    if should_fetch:
+        try:
+            finished, j_copy = fetch_judge0_result(token, query_params)
+            if meta:
+                _update_task(token, done=finished, result=j_copy, error=None)
+                meta = _get_task(token)
+            else:
+                meta = {"done": finished, "result": j_copy}
+        except Exception as e:
+            if meta:
+                app.logger.exception(
+                    "api_result refresh failed for token %s: %s", token, e)
+            else:
+                app.logger.exception(
+                    "api_result fetch failed for token %s: %s", token, e)
+                return jsonify({"error": str(e)}), 404
+
     if not meta:
         try:
-            r = http_request(
-                'get',
-                f"{JUDGE0_URL}/submissions/{token}",
-                timeout=10)
-            r.raise_for_status()
-            j = r.json()
-            finished = j.get("status", {}).get("id", 0) not in (1, 2)
-            # attach decoded fields (works whether Judge0 returned base64 or
-            # plain text)
-            j_copy = dict(j)
-            j_copy["decoded_stdout"] = _maybe_base64_decode(j.get("stdout"))
-            j_copy["decoded_stderr"] = _maybe_base64_decode(j.get("stderr"))
-            # also expose decoded text in stdout/stderr fields for clients
-            # expecting plain text
-            j_copy["stdout"] = j_copy["decoded_stdout"]
-            j_copy["stderr"] = j_copy["decoded_stderr"]
+            finished, j_copy = fetch_judge0_result(token, query_params)
             return jsonify({"done": finished, "result": j_copy})
         except Exception as e:
             app.logger.exception(
@@ -587,10 +616,13 @@ def api_result(token):
         res_copy = dict(res)
         res_copy["decoded_stdout"] = _maybe_base64_decode(res.get("stdout"))
         res_copy["decoded_stderr"] = _maybe_base64_decode(res.get("stderr"))
+        res_copy["decoded_compile_output"] = _maybe_base64_decode(
+            res.get("compile_output"))
         # overwrite stdout/stderr with decoded values so API returns
         # human-readable text
         res_copy["stdout"] = res_copy["decoded_stdout"]
         res_copy["stderr"] = res_copy["decoded_stderr"]
+        res_copy["compile_output"] = res_copy["decoded_compile_output"]
         out["result"] = res_copy
     return jsonify(out)
 

@@ -35,7 +35,12 @@ func (s *Server) handleAuthRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, authResponse{User: toCurrentUserResponse(result.User)})
+	userResponse, err := s.currentUserResponse(r.Context(), result.User)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusCreated, authResponse{User: userResponse})
 }
 
 func (s *Server) handleAdminRegistrationPin(w http.ResponseWriter, r *http.Request) {
@@ -78,8 +83,13 @@ func (s *Server) handleAuthLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userResponse, err := s.currentUserResponse(r.Context(), result.User)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 	setSessionCookie(w, result.Token, result.ExpiresAt)
-	writeJSON(w, http.StatusOK, authResponse{User: toCurrentUserResponse(result.User)})
+	writeJSON(w, http.StatusOK, authResponse{User: userResponse})
 }
 
 func (s *Server) handleAuthLogout(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +116,12 @@ func (s *Server) handleAuthMe(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "authentication required")
 		return
 	}
-	writeJSON(w, http.StatusOK, toCurrentUserResponse(user))
+	userResponse, err := s.currentUserResponse(r.Context(), user)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, userResponse)
 }
 
 func (s *Server) handleMeProfile(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +132,12 @@ func (s *Server) handleMeProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		writeJSON(w, http.StatusOK, toCurrentUserResponse(user))
+		userResponse, err := s.currentUserResponse(r.Context(), user)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		writeJSON(w, http.StatusOK, userResponse)
 		return
 	}
 
@@ -140,7 +160,12 @@ func (s *Server) handleMeProfile(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, toCurrentUserResponse(updated))
+	userResponse, err := s.currentUserResponse(r.Context(), updated)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, userResponse)
 }
 
 func (s *Server) handleMeSubmissions(w http.ResponseWriter, r *http.Request) {

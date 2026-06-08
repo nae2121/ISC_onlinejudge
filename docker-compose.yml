@@ -55,10 +55,10 @@ services:
     environment:
       - JUDGE0_URL=http://server:2358
       - APP_PUBLIC_URL=http://demo:5000
-      - ENABLE_CALLBACKS=true
-      - REDIS_URL=redis://redis:6379/0
+      - ENABLE_CALLBACKS=false
+      - REDIS_URL=redis://:redis_pass_change_me@redis:6379/0
     command: >
-      sh -c "pip install --no-cache-dir flask requests redis && python3 app.py"
+      sh -c "pip install --no-cache-dir --upgrade 'flask>=3,<4' 'requests>=2.31,<3' 'redis>=5,<9' && python3 app.py"
     depends_on:
       - server
       - redis
@@ -152,7 +152,11 @@ services:
       WORKER_ID: worker-1
       JOB_POLL_INTERVAL: 1s
       JOB_STALE_AFTER: 10m
-      OUTPUT_LIMIT_BYTES: 16777216
+      OUTPUT_LIMIT_BYTES: 4194304
+      JUDGE0_URL: http://server:2358
+      JUDGE0_TIMEOUT: 30s
+      JUDGE0_POLL_INTERVAL: 500ms
+      JUDGE0_POLL_ATTEMPTS: 120
     volumes:
       - ./backend/storage:/data/storage
     depends_on:

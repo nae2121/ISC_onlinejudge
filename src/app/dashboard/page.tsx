@@ -3,7 +3,7 @@
 import {
   ArrowRight,
   CheckCircle2,
-  FileCode2,
+  Gauge,
   ListChecks,
   ShieldCheck,
   Trophy,
@@ -69,9 +69,9 @@ function DashboardContent({ user }: { user: CurrentUser }) {
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <Metric icon={<Trophy className="h-5 w-5" />} label="Rating" value={user.rating} />
+        <Metric icon={<Gauge className="h-5 w-5" />} label="Rating" value={user.rating} />
         <Metric icon={<CheckCircle2 className="h-5 w-5" />} label="Solved" value={user.solvedCount} />
-        <Metric icon={<FileCode2 className="h-5 w-5" />} label="Submissions" value={user.submissionsCount} />
+        <Metric icon={<Trophy className="h-5 w-5" />} label="Points" value={user.points} />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">

@@ -68,6 +68,20 @@ DEMO_URL=http://localhost:5000 JUDGE0_URL=http://localhost:2359 npm run dev -- -
 
 このリポジトリの環境では Docker Compose で動かすのが一番簡単です。
 
+## 実機 / Cloudflare Tunnel で公開する場合
+
+公開時は Next.js の開発サーバーではなく production server を使います。開発サーバーのまま公開すると `/_next/webpack-hmr` の WebSocket が 502 になり、ブラウザ console に HMR エラーが出ます。
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Cloudflare Tunnel は `web` の公開ポートに向けます。
+
+```text
+http://localhost:5174
+```
+
 ## Go バックエンド
 
 Go バックエンドの設計と起動方法は [backend/README.md](backend/README.md) にまとめています。

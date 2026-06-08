@@ -10,6 +10,7 @@ export type CurrentUser = {
   isActive: boolean;
   rating: number;
   solvedCount: number;
+  points: number;
   submissionsCount: number;
 };
 
@@ -111,7 +112,7 @@ export type AdminProblemInput = {
   isPublic: boolean;
 };
 
-export type SubmissionStatus = "AC" | "WA" | "TLE" | "RE" | "CE" | "IE" | "WJ";
+export type SubmissionStatus = "AC" | "WA" | "TLE" | "MLE" | "RE" | "CE" | "OLE" | "IE" | "WJ";
 
 export type Submission = {
   id: number;
@@ -125,6 +126,7 @@ export type Submission = {
   maxTimeMs: number;
   maxMemoryKb: number;
   submittedAt: string;
+  errorMessage?: string;
 };
 
 export type CreateSubmissionInput = {
@@ -146,6 +148,8 @@ export type RegisterInput = {
   password: string;
   pinCode: string;
 };
+
+const API_REQUEST_TIMEOUT_MS = 15_000;
 
 class ApiError extends Error {
   status: number;
@@ -233,6 +237,13 @@ export async function getProfile() {
 export async function getMySubmissions() {
   const submissions = await apiRequest<unknown[]>("/api/me/submissions");
   return submissions.map(normalizeSubmission);
+}
+
+export async function getSolvedProblems(username: string) {
+  const problems = await apiRequest<unknown[]>(
+    `/api/users/${encodeURIComponent(username)}/solved`
+  );
+  return problems.map(normalizeProblem);
 }
 
 export async function submitProblem(input: CreateSubmissionInput) {
@@ -356,15 +367,32 @@ export async function copyAdminProblem(id: number) {
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
-  const response = await fetch(path, {
-    ...init,
-    cache: "no-store",
-    credentials: "include",
-    headers: {
-      "content-type": "application/json",
-      ...init.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timeoutID = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
+  let response: Response;
+
+  try {
+    response = await fetch(path, {
+      ...init,
+      cache: "no-store",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        ...init.headers,
+      },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error && error.name === "AbortError"
+        ? "通信がタイムアウトしました"
+        : error instanceof Error
+          ? error.message
+          : String(error);
+    throw new ApiError(0, message);
+  } finally {
+    clearTimeout(timeoutID);
+  }
 
   if (!response.ok) {
     const message = await errorMessage(response);
@@ -411,6 +439,7 @@ function normalizeUser(value: unknown): CurrentUser {
     isActive,
     rating: numberValue(source.rating, 0),
     solvedCount: numberValue(source.solved_count ?? source.solvedCount, 0),
+    points: numberValue(source.points ?? source.earned_points ?? source.earnedPoints, 0),
     submissionsCount: numberValue(source.submissions_count ?? source.submissionsCount, 0),
   };
 }
@@ -447,6 +476,10 @@ function normalizeSubmission(value: unknown): Submission {
   const source = objectValue(value);
   const problemID = numberValue(source.problem_id ?? source.problemId, 0);
   const languageID = numberValue(source.language_id ?? source.languageId, 0);
+  const results = Array.isArray(source.results) ? source.results.map(objectValue) : [];
+  const resultError = results
+    .map((result) => result.error_message ?? result.errorMessage)
+    .find((message) => typeof message === "string" && message.trim());
 
   return {
     id: numberValue(source.id, 0),
@@ -463,6 +496,7 @@ function normalizeSubmission(value: unknown): Submission {
     maxTimeMs: numberValue(source.max_time_ms ?? source.maxTimeMs, 0),
     maxMemoryKb: numberValue(source.max_memory_kb ?? source.maxMemoryKb, 0),
     submittedAt: stringValue(source.submitted_at ?? source.submittedAt, new Date().toISOString()),
+    errorMessage: optionalString(source.error_message ?? source.errorMessage ?? resultError),
   };
 }
 
@@ -658,8 +692,10 @@ function statusValue(value: unknown): SubmissionStatus {
   return value === "AC" ||
     value === "WA" ||
     value === "TLE" ||
+    value === "MLE" ||
     value === "RE" ||
     value === "CE" ||
+    value === "OLE" ||
     value === "IE" ||
     value === "WJ"
     ? value

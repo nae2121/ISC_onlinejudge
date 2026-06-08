@@ -28,18 +28,24 @@ func main() {
 	defer pool.Close()
 
 	store := repository.NewStore(pool)
+	objectStorage := storage.NewLocalStorage(cfg.StorageRoot)
 	worker := &judge.Worker{
-		WorkerID:         cfg.WorkerID,
-		Store:            store,
-		Queue:            queue.NewPostgresQueue(pool),
-		Storage:          storage.NewLocalStorage(cfg.StorageRoot),
-		Sandbox:          judge.StubSandbox{},
+		WorkerID: cfg.WorkerID,
+		Store:    store,
+		Queue:    queue.NewPostgresQueue(pool),
+		Storage:  objectStorage,
+		Sandbox: judge.NewJudge0Sandbox(judge.Judge0SandboxConfig{
+			BaseURL:         cfg.Judge0URL,
+			Timeout:         cfg.Judge0Timeout,
+			PollInterval:    cfg.Judge0PollInterval,
+			PollMaxAttempts: cfg.Judge0PollAttempts,
+		}),
 		PollInterval:     cfg.JobPollInterval,
 		StaleAfter:       cfg.JobStaleAfter,
 		OutputLimitBytes: cfg.OutputLimitBytes,
 	}
 
-	log.Printf("judge worker %s started", cfg.WorkerID)
+	log.Printf("judge worker %s started with Judge0 at %s", cfg.WorkerID, cfg.Judge0URL)
 	if err := worker.Run(ctx); err != nil && err != context.Canceled {
 		log.Fatalf("worker stopped: %v", err)
 	}

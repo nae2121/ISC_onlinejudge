@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -204,21 +205,32 @@ func toUserProfileResponse(user repository.User) userProfileResponse {
 	}
 }
 
-func toCurrentUserResponse(user repository.User) currentUserResponse {
+func (s *Server) currentUserResponse(ctx context.Context, user repository.User) (currentUserResponse, error) {
+	stats, err := s.users.GetStats(ctx, user.ID)
+	if err != nil {
+		return currentUserResponse{}, err
+	}
+	return toCurrentUserResponse(user, stats), nil
+}
+
+func toCurrentUserResponse(user repository.User, stats repository.UserStats) currentUserResponse {
 	return currentUserResponse{
-		ID:              user.ID,
-		Username:        user.Username,
-		DisplayName:     user.DisplayName,
-		Email:           user.Email,
-		Role:            user.Role,
-		Permissions:     rolePermissions(user.Role),
-		Rating:          user.Rating,
-		Bio:             user.Bio,
-		IconURL:         nullString(user.IconURL),
-		IsActive:        user.IsActive,
-		EmailVerifiedAt: nullTime(user.EmailVerifiedAt),
-		CreatedAt:       user.CreatedAt,
-		UpdatedAt:       user.UpdatedAt,
+		ID:               user.ID,
+		Username:         user.Username,
+		DisplayName:      user.DisplayName,
+		Email:            user.Email,
+		Role:             user.Role,
+		Permissions:      rolePermissions(user.Role),
+		Rating:           user.Rating,
+		SolvedCount:      stats.SolvedCount,
+		Points:           stats.Points,
+		SubmissionsCount: stats.SubmissionsCount,
+		Bio:              user.Bio,
+		IconURL:          nullString(user.IconURL),
+		IsActive:         user.IsActive,
+		EmailVerifiedAt:  nullTime(user.EmailVerifiedAt),
+		CreatedAt:        user.CreatedAt,
+		UpdatedAt:        user.UpdatedAt,
 	}
 }
 
@@ -259,19 +271,22 @@ type userProfileResponse struct {
 }
 
 type currentUserResponse struct {
-	ID              int64      `json:"id"`
-	Username        string     `json:"username"`
-	DisplayName     string     `json:"display_name"`
-	Email           string     `json:"email"`
-	Role            string     `json:"role"`
-	Permissions     []string   `json:"permissions"`
-	Rating          int        `json:"rating"`
-	Bio             string     `json:"bio"`
-	IconURL         string     `json:"icon_url,omitempty"`
-	IsActive        bool       `json:"is_active"`
-	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
+	ID               int64      `json:"id"`
+	Username         string     `json:"username"`
+	DisplayName      string     `json:"display_name"`
+	Email            string     `json:"email"`
+	Role             string     `json:"role"`
+	Permissions      []string   `json:"permissions"`
+	Rating           int        `json:"rating"`
+	SolvedCount      int        `json:"solved_count"`
+	Points           int        `json:"points"`
+	SubmissionsCount int        `json:"submissions_count"`
+	Bio              string     `json:"bio"`
+	IconURL          string     `json:"icon_url,omitempty"`
+	IsActive         bool       `json:"is_active"`
+	EmailVerifiedAt  *time.Time `json:"email_verified_at,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
 }
 
 type adminUserResponse struct {
