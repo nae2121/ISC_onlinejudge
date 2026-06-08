@@ -52,6 +52,12 @@ type User struct {
 	UpdatedAt       time.Time
 }
 
+type UserStats struct {
+	SolvedCount      int
+	Points           int
+	SubmissionsCount int
+}
+
 type Problem struct {
 	ID                int64
 	CreatedByUserID   sql.NullInt64

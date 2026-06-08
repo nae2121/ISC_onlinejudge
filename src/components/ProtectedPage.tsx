@@ -1,6 +1,7 @@
 "use client";
 
-import { Clock3, Loader2, LogOut } from "lucide-react";
+import { AlertTriangle, Clock3, Loader2, LogOut, RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -26,9 +27,13 @@ export function ProtectedPage({
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [checking, setChecking] = useState(true);
+  const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let ignore = false;
+    setChecking(true);
+    setError("");
     getMe().then((nextUser) => {
       if (ignore) {
         return;
@@ -48,16 +53,26 @@ export function ProtectedPage({
       }
       setUser(nextUser);
       setChecking(false);
-    }).catch(() => {
+    }).catch((cause) => {
       if (!ignore) {
-        router.replace("/login");
+        setError(authCheckErrorMessage(cause));
+        setChecking(false);
       }
     });
 
     return () => {
       ignore = true;
     };
-  }, [authorize, router, unauthorizedRedirectTo]);
+  }, [authorize, router, unauthorizedRedirectTo, retryCount]);
+
+  if (error) {
+    return (
+      <AuthCheckError
+        message={error}
+        onRetry={() => setRetryCount((value) => value + 1)}
+      />
+    );
+  }
 
   if (checking || !user) {
     return (
@@ -75,6 +90,44 @@ export function ProtectedPage({
       {showHeader ? <Header user={user} /> : null}
       {isApprovedUser(user) ? children(user) : <ApprovalPending user={user} />}
     </div>
+  );
+}
+
+function AuthCheckError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <main className="flex min-h-dvh items-center justify-center bg-zinc-50 px-4 text-zinc-950">
+      <section className="w-full max-w-md rounded-md border border-rose-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-md bg-rose-50 text-rose-700">
+          <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <h1 className="text-lg font-semibold tracking-normal">
+          認証状態を確認できません
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-zinc-600">{message}</p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <button
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
+            onClick={onRetry}
+            type="button"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            再試行
+          </button>
+          <Link
+            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+            href="/login"
+          >
+            ログインへ
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -118,4 +171,11 @@ function ApprovalPending({ user }: { user: CurrentUser }) {
       </section>
     </main>
   );
+}
+
+function authCheckErrorMessage(cause: unknown) {
+  const message = cause instanceof Error ? cause.message : "";
+  return message
+    ? `API サーバーへの接続に失敗しました: ${message}`
+    : "API サーバーへの接続に失敗しました。";
 }

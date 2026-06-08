@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 
 const BACKEND_API_URL =
   process.env.BACKEND_API_URL?.replace(/\/+$/, "") ?? "http://localhost:8080";
+const BACKEND_API_TIMEOUT_MS = positiveIntEnv("BACKEND_API_TIMEOUT_MS", 15_000);
 
 type ProxyOptions = {
   path: string;
@@ -32,9 +33,10 @@ export async function proxyBackend({ path, request }: ProxyOptions) {
       headers,
       body: hasBody ? await request.text() : undefined,
       cache: "no-store",
+      signal: AbortSignal.timeout(BACKEND_API_TIMEOUT_MS),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = backendErrorMessage(error);
     return Response.json(
       { error: `backend unavailable: ${message}` },
       { status: 502 }
@@ -77,4 +79,16 @@ function getSetCookies(headers: Headers) {
 
   const value = headers.get("set-cookie");
   return value ? [value] : [];
+}
+
+function backendErrorMessage(error: unknown) {
+  if (error instanceof Error && error.name === "TimeoutError") {
+    return `request timed out after ${BACKEND_API_TIMEOUT_MS}ms`;
+  }
+  return error instanceof Error ? error.message : String(error);
+}
+
+function positiveIntEnv(key: string, fallback: number) {
+  const value = Number.parseInt(process.env[key] ?? "", 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
 }

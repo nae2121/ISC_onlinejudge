@@ -20,6 +20,7 @@ type CompileRequest struct {
 	WorkDir    string
 	Language   repository.Language
 	SourcePath string
+	SourceCode string
 }
 
 type CompileResult struct {
@@ -33,6 +34,8 @@ type RunRequest struct {
 	Language         repository.Language
 	ExecutablePath   string
 	InputPath        string
+	Input            []byte
+	SourceCode       string
 	TimeLimit        time.Duration
 	MemoryLimitKB    int
 	OutputLimitBytes int64
@@ -66,4 +69,3 @@ func (StubSandbox) Cleanup(ctx context.Context, workDir string) error {
 // Each can replace StubSandbox with a real implementation later.
 type DockerSandbox struct{ StubSandbox }
 type IsolateSandbox struct{ StubSandbox }
-type Judge0Sandbox struct{ StubSandbox }

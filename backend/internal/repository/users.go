@@ -52,6 +52,28 @@ LIMIT 1`, identity)
 	return scanUser(row)
 }
 
+func (s *Store) GetUserStats(ctx context.Context, userID int64) (UserStats, error) {
+	row := s.pool.QueryRow(ctx, `
+WITH solved AS (
+  SELECT DISTINCT s.problem_id, p.score
+  FROM submissions s
+  JOIN problems p ON p.id = s.problem_id
+  WHERE s.user_id = $1
+    AND s.status = 'AC'
+    AND p.is_public = true
+)
+SELECT
+  COALESCE((SELECT COUNT(*) FROM solved), 0)::int AS solved_count,
+  COALESCE((SELECT SUM(score) FROM solved), 0)::int AS points,
+  COALESCE((SELECT COUNT(*) FROM submissions WHERE user_id = $1), 0)::int AS submissions_count`,
+		userID,
+	)
+
+	var stats UserStats
+	err := row.Scan(&stats.SolvedCount, &stats.Points, &stats.SubmissionsCount)
+	return stats, err
+}
+
 func (s *Store) ListUsers(ctx context.Context, params ListUsersParams) ([]User, error) {
 	rows, err := s.pool.Query(ctx, `
 SELECT id, username, display_name, email, password_hash, role, rating, bio,

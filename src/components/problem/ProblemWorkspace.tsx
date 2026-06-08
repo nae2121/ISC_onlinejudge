@@ -12,7 +12,7 @@ import { ProblemHeader } from "@/components/problem/ProblemHeader";
 import { ProblemPanel } from "@/components/problem/ProblemPanel";
 import type { JudgeSettings } from "@/components/types";
 import type { CurrentUser, Problem, Submission } from "@/lib/api";
-import { getProblem, getSubmission, submitProblem } from "@/lib/api";
+import { getProblem, getSolvedProblems, getSubmission, submitProblem } from "@/lib/api";
 import type { JudgeStatus, RunResult, SubmitResult } from "@/types/submission";
 
 const DEFAULT_CUSTOM_INPUT = "5\n-2 1 -3 4 -1";
@@ -67,10 +67,23 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
     let ignore = false;
     setLoading(true);
 
-    getProblem(slug)
-      .then((nextProblem) => {
+    Promise.all([getProblem(slug), getSolvedProblems(user.username).catch(() => [])])
+      .then(([nextProblem, solvedProblems]) => {
         if (ignore) return;
-        setProblem(nextProblem);
+        const solvedKeys = new Set(
+          solvedProblems.flatMap((solvedProblem) => [
+            solvedProblem.slug,
+            solvedProblem.id ? String(solvedProblem.id) : "",
+          ])
+        );
+        setProblem(
+          nextProblem
+            ? {
+                ...nextProblem,
+                solved: solvedKeys.has(nextProblem.slug) || solvedKeys.has(String(nextProblem.id)),
+              }
+            : null
+        );
         if (nextProblem?.samples[0]?.input) {
           setCustomInput(nextProblem.samples[0].input);
         }
@@ -82,7 +95,7 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
     return () => {
       ignore = true;
     };
-  }, [slug]);
+  }, [slug, user.username]);
 
   const runInput = useMemo(
     () => (activeTab === "tests" ? selectedSample?.input ?? customInput : customInput),
@@ -152,6 +165,7 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
       setRunResult({
         status,
         stdout: "",
+        stderr: submission.errorMessage,
         timeMs: submission.maxTimeMs || undefined,
         memoryKb: submission.maxMemoryKb || undefined,
       });
@@ -338,7 +352,7 @@ function judge0ResultToRunResult(
   return {
     status,
     stdout,
-    stderr: stderr || compileOutput || stringValue(value.message),
+    stderr: stderr || compileOutput || stringValue(value.message) || stringValue(value.error),
     timeMs: Number.isFinite(time) ? Math.round(time * 1000) : undefined,
     memoryKb: typeof value.memory === "number" ? value.memory : undefined,
   };
@@ -360,8 +374,10 @@ function submissionStatusToJudgeStatus(submission: Submission): JudgeStatus {
   if (submission.status === "AC") return "AC";
   if (submission.status === "WA") return "WA";
   if (submission.status === "TLE") return "TLE";
+  if (submission.status === "MLE") return "MLE";
   if (submission.status === "RE") return "RE";
   if (submission.status === "CE") return "CE";
+  if (submission.status === "OLE") return "OLE";
   return "IE";
 }
 

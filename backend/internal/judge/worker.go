@@ -125,6 +125,7 @@ func (w *Worker) processJob(ctx context.Context, job queue.Job) error {
 		WorkDir:    workDir,
 		Language:   language,
 		SourcePath: sourcePath,
+		SourceCode: submission.SourceCode,
 	})
 	if err != nil {
 		return w.failSubmission(ctx, job.ID, submission.ID, err)
@@ -153,6 +154,10 @@ func (w *Worker) processJob(ctx context.Context, job queue.Job) error {
 
 	for _, tc := range testCases {
 		inputPath := tc.InputPath
+		input, err := w.Storage.Read(ctx, inputPath)
+		if err != nil {
+			return w.failSubmission(ctx, job.ID, submission.ID, fmt.Errorf("read input: %w", err))
+		}
 		expected, err := w.Storage.Read(ctx, tc.OutputPath)
 		if err != nil {
 			return w.failSubmission(ctx, job.ID, submission.ID, fmt.Errorf("read expected output: %w", err))
@@ -166,6 +171,8 @@ func (w *Worker) processJob(ctx context.Context, job queue.Job) error {
 			Language:         language,
 			ExecutablePath:   compile.OutputPath,
 			InputPath:        inputPath,
+			Input:            input,
+			SourceCode:       submission.SourceCode,
 			TimeLimit:        timeLimit,
 			MemoryLimitKB:    memoryLimitKB,
 			OutputLimitBytes: w.OutputLimitBytes,
@@ -221,6 +228,15 @@ func (w *Worker) processJob(ctx context.Context, job queue.Job) error {
 }
 
 func (w *Worker) failSubmission(ctx context.Context, jobID, submissionID int64, cause error) error {
+	message := ""
+	if cause != nil {
+		message = cause.Error()
+	}
+	_, _ = w.Store.InsertSubmissionResult(ctx, repository.InsertResultParams{
+		SubmissionID: submissionID,
+		Status:       repository.SubmissionInternalErr,
+		ErrorMessage: sql.NullString{String: message, Valid: message != ""},
+	})
 	_ = w.Store.UpdateSubmissionFinal(ctx, submissionID, repository.SubmissionInternalErr, 0, 0, 0)
 	_ = w.Queue.Fail(ctx, jobID)
 	return cause

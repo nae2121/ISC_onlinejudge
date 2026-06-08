@@ -1,0 +1,16 @@
+services:
+  web:
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - DEMO_URL=http://demo:5000
+      - JUDGE0_URL=http://server:2358
+      - BACKEND_API_URL=http://backend_api:8080
+      - BACKEND_API_TIMEOUT_MS=15000
+      - APP_REGISTRATION_PIN_CODE=1234
+    command: sh -c "npm ci --include=dev && npm run build && npm run start -- --hostname 0.0.0.0 --port 3000"
+    depends_on:
+      demo:
+        condition: service_started
+      backend_api:
+        condition: service_healthy

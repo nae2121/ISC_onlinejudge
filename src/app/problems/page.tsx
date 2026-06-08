@@ -4,25 +4,24 @@ import { useEffect, useState } from "react";
 import { ProblemList } from "@/components/ProblemList";
 import { ProtectedPage } from "@/components/ProtectedPage";
 import type { Problem } from "@/lib/api";
-import { getMySubmissions, getProblems } from "@/lib/api";
+import { getProblems, getSolvedProblems } from "@/lib/api";
 
 export default function ProblemsPage() {
-  return <ProtectedPage>{() => <ProblemsContent />}</ProtectedPage>;
+  return <ProtectedPage>{(user) => <ProblemsContent username={user.username} />}</ProtectedPage>;
 }
 
-function ProblemsContent() {
+function ProblemsContent({ username }: { username: string }) {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getProblems(), getMySubmissions().catch(() => [])])
-      .then(([nextProblems, submissions]) => {
+    Promise.all([getProblems(), getSolvedProblems(username).catch(() => [])])
+      .then(([nextProblems, solvedProblems]) => {
         const solvedKeys = new Set(
-          submissions
-            .filter((submission) => submission.status === "AC")
-            .flatMap((submission) => [
-              submission.problemSlug,
-              submission.problemId ? String(submission.problemId) : "",
+          solvedProblems
+            .flatMap((problem) => [
+              problem.slug,
+              problem.id ? String(problem.id) : "",
             ])
             .filter(Boolean)
         );
@@ -34,7 +33,7 @@ function ProblemsContent() {
         );
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [username]);
 
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-5 px-4 py-6">

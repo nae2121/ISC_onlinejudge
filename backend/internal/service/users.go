@@ -41,6 +41,10 @@ func (s *UserService) GetByID(ctx context.Context, id int64) (repository.User, e
 	return s.store.GetUserByID(ctx, id)
 }
 
+func (s *UserService) GetStats(ctx context.Context, userID int64) (repository.UserStats, error) {
+	return s.store.GetUserStats(ctx, userID)
+}
+
 func (s *UserService) ListUsers(ctx context.Context, limit, offset int) ([]repository.User, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 50

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Mail, Trophy } from "lucide-react";
+import { CheckCircle2, Gauge, Mail, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ProtectedPage } from "@/components/ProtectedPage";
@@ -35,18 +35,22 @@ function ProfileContent({ user }: { user: CurrentUser }) {
               {profile.displayName}
             </h1>
           </div>
-          <div className="grid gap-2 text-sm text-zinc-600 sm:grid-cols-3">
+          <div className="grid gap-2 text-sm text-zinc-600 sm:grid-cols-2 lg:grid-cols-4">
             <span className="inline-flex items-center gap-2">
               <Mail className="h-4 w-4 text-zinc-400" aria-hidden="true" />
               {profile.email}
             </span>
             <span className="inline-flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              <Gauge className="h-4 w-4 text-zinc-400" aria-hidden="true" />
               {profile.rating}
             </span>
             <span className="inline-flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              <CheckCircle2 className="h-4 w-4 text-zinc-400" aria-hidden="true" />
               {profile.solvedCount} solved
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              {profile.points} pts
             </span>
           </div>
         </div>

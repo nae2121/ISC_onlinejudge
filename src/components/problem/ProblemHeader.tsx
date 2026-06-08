@@ -1,4 +1,4 @@
-import { BookOpen, Code2, Gauge, ListChecks, ShieldCheck, Trophy, UserCircle } from "lucide-react";
+import { BookOpen, Gauge, ListChecks, ShieldCheck, Trophy, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { CurrentUser, Problem } from "@/lib/api";
@@ -7,9 +7,12 @@ import { isAdminUser } from "@/lib/api";
 export function ProblemHeader({ problem, user }: { problem: Problem | null; user: CurrentUser }) {
   return (
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-zinc-200 bg-white px-4 text-zinc-950 dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#e6edf3]">
-      <Link className="flex shrink-0 items-center gap-2 text-sm font-bold text-zinc-950 dark:text-[#e6edf3]" href="/dashboard">
-        <Code2 className="h-4 w-4 text-teal-700 dark:text-emerald-400" aria-hidden="true" />
-        <span>Wait for Judge</span>
+      <Link className="flex shrink-0 items-center" href="/dashboard">
+        <img
+          alt="Wait for Judge"
+          className="h-8 w-auto object-contain"
+          src="/static/image/WfJ.png"
+        />
       </Link>
 
       <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm text-zinc-600 dark:text-[#8b949e]">
