@@ -68,6 +68,49 @@ export type ProblemSample = {
   explanation?: string;
 };
 
+export type ProblemDifficulty = Problem["difficulty"];
+
+export type AdminProblemStatus = "public" | "private" | "draft" | "archived";
+
+export type AdminProblem = {
+  id: number;
+  title: string;
+  slug: string;
+  problemCode: string;
+  statement: string;
+  constraints: string;
+  inputFormat: string;
+  outputFormat: string;
+  timeLimitMs: number;
+  memoryLimitMb: number;
+  score: number;
+  difficulty: ProblemDifficulty;
+  tags: string[];
+  isPublic: boolean;
+  status: AdminProblemStatus;
+  testCaseCount: number;
+  sampleCaseCount: number;
+  hiddenCaseCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type AdminProblemInput = {
+  title: string;
+  slug: string;
+  problemCode: string;
+  statement: string;
+  constraints: string;
+  inputFormat: string;
+  outputFormat: string;
+  timeLimitMs: number;
+  memoryLimitMb: number;
+  score: number;
+  difficulty: ProblemDifficulty;
+  tags: string[];
+  isPublic: boolean;
+};
+
 export type SubmissionStatus = "AC" | "WA" | "TLE" | "RE" | "CE" | "IE" | "WJ";
 
 export type Submission = {
@@ -243,6 +286,75 @@ export async function changeAdminUserPassword(id: number, password: string) {
   );
 }
 
+export async function getAdminProblems() {
+  const payload = await apiRequest<unknown>("/api/admin/problems");
+  const source = objectValue(payload);
+  const problems = Array.isArray(payload)
+    ? payload
+    : Array.isArray(source.problems)
+      ? source.problems
+      : [];
+  return problems.map(normalizeAdminProblem);
+}
+
+export async function getAdminProblem(id: number) {
+  const payload = await apiRequest<unknown>(
+    `/api/admin/problems/${encodeURIComponent(String(id))}`
+  );
+  return normalizeAdminProblem(payload);
+}
+
+export async function createAdminProblem(input: AdminProblemInput) {
+  const payload = await apiRequest<unknown>("/api/admin/problems", {
+    method: "POST",
+    body: JSON.stringify(adminProblemPayload(input)),
+  });
+  return normalizeAdminProblem(payload);
+}
+
+export async function updateAdminProblem(id: number, input: AdminProblemInput) {
+  const payload = await apiRequest<unknown>(
+    `/api/admin/problems/${encodeURIComponent(String(id))}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(adminProblemPayload(input)),
+    }
+  );
+  return normalizeAdminProblem(payload);
+}
+
+export async function publishAdminProblem(id: number) {
+  const payload = await apiRequest<unknown>(
+    `/api/admin/problems/${encodeURIComponent(String(id))}/publish`,
+    { method: "POST" }
+  );
+  return normalizeAdminProblem(payload);
+}
+
+export async function unpublishAdminProblem(id: number) {
+  const payload = await apiRequest<unknown>(
+    `/api/admin/problems/${encodeURIComponent(String(id))}/unpublish`,
+    { method: "POST" }
+  );
+  return normalizeAdminProblem(payload);
+}
+
+export async function archiveAdminProblem(id: number) {
+  const payload = await apiRequest<unknown>(
+    `/api/admin/problems/${encodeURIComponent(String(id))}/archive`,
+    { method: "POST" }
+  );
+  return normalizeAdminProblem(payload);
+}
+
+export async function copyAdminProblem(id: number) {
+  const payload = await apiRequest<unknown>(
+    `/api/admin/problems/${encodeURIComponent(String(id))}/copy`,
+    { method: "POST" }
+  );
+  return normalizeAdminProblem(payload);
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}) {
   const response = await fetch(path, {
     ...init,
@@ -380,6 +492,81 @@ function normalizeAdminUser(value: unknown): AdminUser {
   };
 }
 
+function normalizeAdminProblem(value: unknown): AdminProblem {
+  const source = objectValue(value);
+  const wrappedProblem = objectValue(source.problem);
+  const problem = Object.keys(wrappedProblem).length > 0 ? wrappedProblem : source;
+  const isArchived = booleanValue(problem.is_archived ?? problem.isArchived, false);
+  const isDraft = booleanValue(problem.is_draft ?? problem.isDraft, false);
+  const isPublic = booleanValue(problem.is_public ?? problem.isPublic, false);
+  const status = adminProblemStatusValue(
+    problem.status,
+    isArchived ? "archived" : isDraft ? "draft" : isPublic ? "public" : "private"
+  );
+  const samples = normalizeSamples(source.test_cases ?? source.testCases ?? problem.samples);
+  const sampleCount = numberValue(
+    problem.sample_case_count ?? problem.sampleCaseCount,
+    samples.length
+  );
+  const testCaseCount = numberValue(
+    problem.test_case_count ?? problem.testCaseCount,
+    samples.length
+  );
+
+  return {
+    id: numberValue(problem.id, 0),
+    title: stringValue(problem.title, ""),
+    slug: stringValue(problem.slug, ""),
+    problemCode: stringValue(
+      problem.problem_code ?? problem.problemCode ?? problem.code,
+      ""
+    ),
+    statement: stringValue(
+      problem.statement ?? problem.statement_markdown ?? problem.statementMarkdown,
+      ""
+    ),
+    constraints: stringValue(problem.constraints, ""),
+    inputFormat: stringValue(problem.input_format ?? problem.inputFormat, ""),
+    outputFormat: stringValue(problem.output_format ?? problem.outputFormat, ""),
+    timeLimitMs: numberValue(problem.time_limit_ms ?? problem.timeLimitMs, 2000),
+    memoryLimitMb: memoryLimitValue(problem),
+    score: numberValue(problem.score, 100),
+    difficulty: difficultyValue(problem.difficulty),
+    tags: arrayOfStrings(problem.tags),
+    isPublic: status === "public",
+    status,
+    testCaseCount,
+    sampleCaseCount: sampleCount,
+    hiddenCaseCount: numberValue(
+      problem.hidden_case_count ?? problem.hiddenCaseCount,
+      Math.max(0, testCaseCount - sampleCount)
+    ),
+    createdAt: optionalString(problem.created_at ?? problem.createdAt),
+    updatedAt: optionalString(problem.updated_at ?? problem.updatedAt),
+  };
+}
+
+function adminProblemPayload(input: AdminProblemInput) {
+  const memoryLimitKb = Math.max(1, Math.round(input.memoryLimitMb * 1000));
+
+  return {
+    title: input.title,
+    slug: input.slug,
+    problem_code: input.problemCode,
+    statement_markdown: input.statement,
+    constraints: input.constraints,
+    input_format: input.inputFormat,
+    output_format: input.outputFormat,
+    time_limit_ms: input.timeLimitMs,
+    memory_limit_mb: input.memoryLimitMb,
+    memory_limit_kb: memoryLimitKb,
+    score: input.score,
+    difficulty: input.difficulty,
+    tags: input.tags,
+    is_public: input.isPublic,
+  };
+}
+
 function normalizeSamples(value: unknown): ProblemSample[] {
   return Array.isArray(value)
     ? value
@@ -484,6 +671,18 @@ function adminUserStatusValue(
   fallback: AdminUserStatus = "pending"
 ): AdminUserStatus {
   return value === "pending" || value === "active" || value === "suspended"
+    ? value
+    : fallback;
+}
+
+function adminProblemStatusValue(
+  value: unknown,
+  fallback: AdminProblemStatus
+): AdminProblemStatus {
+  return value === "public" ||
+    value === "private" ||
+    value === "draft" ||
+    value === "archived"
     ? value
     : fallback;
 }
