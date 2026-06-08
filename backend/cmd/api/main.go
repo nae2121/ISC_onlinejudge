@@ -16,6 +16,7 @@ import (
 	"onlinejudge/backend/internal/handler"
 	"onlinejudge/backend/internal/repository"
 	"onlinejudge/backend/internal/service"
+	"onlinejudge/backend/internal/storage"
 )
 
 func main() {
@@ -30,7 +31,8 @@ func main() {
 	defer pool.Close()
 
 	store := repository.NewStore(pool)
-	problemService := service.NewProblemService(store)
+	objectStorage := storage.NewLocalStorage(cfg.StorageRoot)
+	problemService := service.NewProblemService(store, objectStorage)
 	submissionService := service.NewSubmissionService(store, cfg.DefaultPriority)
 	authService := service.NewAuthService(store, cfg.SessionTTL, cfg.RegistrationPin)
 	userService := service.NewUserService(store)

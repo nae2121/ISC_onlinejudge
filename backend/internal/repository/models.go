@@ -29,6 +29,11 @@ const (
 	ContestParticipantRegistered = "registered"
 	ContestParticipantCancelled  = "cancelled"
 	ContestParticipantBanned     = "banned"
+
+	ProblemStatusDraft    = "draft"
+	ProblemStatusPrivate  = "private"
+	ProblemStatusPublic   = "public"
+	ProblemStatusArchived = "archived"
 )
 
 type User struct {
@@ -58,6 +63,31 @@ type Problem struct {
 	Score             int
 	Difficulty        sql.NullString
 	IsPublic          bool
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+type AdminProblem struct {
+	ID                int64
+	CreatedByUserID   sql.NullInt64
+	Title             string
+	Slug              string
+	ProblemCode       string
+	StatementMarkdown string
+	ConstraintsText   string
+	InputFormat       string
+	OutputFormat      string
+	TimeLimitMS       int
+	MemoryLimitKB     int
+	Score             int
+	Difficulty        sql.NullString
+	Tags              []string
+	IsPublic          bool
+	Status            string
+	ArchivedAt        sql.NullTime
+	TestCaseCount     int
+	SampleCaseCount   int
+	HiddenCaseCount   int
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 }
@@ -151,6 +181,35 @@ type UpdateUserProfileParams struct {
 	DisplayName string
 	Bio         string
 	IconURL     sql.NullString
+}
+
+type AdminProblemParams struct {
+	Title             string
+	Slug              string
+	ProblemCode       string
+	StatementMarkdown string
+	ConstraintsText   string
+	InputFormat       string
+	OutputFormat      string
+	TimeLimitMS       int
+	MemoryLimitKB     int
+	Score             int
+	Difficulty        sql.NullString
+	Tags              []string
+	IsPublic          bool
+	Status            string
+	CreatedByUserID   sql.NullInt64
+}
+
+type AdminTestCaseParams struct {
+	Name       string
+	InputPath  string
+	OutputPath string
+	IsSample   bool
+	IsHidden   bool
+	Score      int
+	GroupName  sql.NullString
+	OrderIndex int
 }
 
 type CreateSessionParams struct {

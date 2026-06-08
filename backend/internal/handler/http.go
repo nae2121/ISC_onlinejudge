@@ -51,6 +51,8 @@ func (s *Server) Routes() http.Handler {
 	mux.Handle("/api/admin/users", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUsers)))
 	mux.Handle("/api/admin/users/", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminUserDetail)))
 	mux.Handle("/api/admin/registration-pin", s.requirePermission(service.PermissionManageUsers)(http.HandlerFunc(s.handleAdminRegistrationPin)))
+	mux.Handle("/api/admin/problems", s.requirePermission(service.PermissionEditAllProblems)(http.HandlerFunc(s.handleAdminProblems)))
+	mux.Handle("/api/admin/problems/", s.requirePermission(service.PermissionEditAllProblems)(http.HandlerFunc(s.handleAdminProblemDetail)))
 	mux.HandleFunc("/api/problems", s.handleProblems)
 	mux.HandleFunc("/api/problems/", s.handleProblemDetail)
 	mux.HandleFunc("/api/languages", s.handleLanguages)
@@ -251,6 +253,8 @@ type problemDetailResponse struct {
 type testCaseResponse struct {
 	ID         int64  `json:"id"`
 	Name       string `json:"name"`
+	Input      string `json:"input"`
+	Output     string `json:"output"`
 	IsSample   bool   `json:"is_sample"`
 	Score      int    `json:"score"`
 	GroupName  string `json:"group_name,omitempty"`
@@ -302,13 +306,15 @@ func toProblemResponse(problem repository.Problem) problemResponse {
 	}
 }
 
-func toTestCaseResponse(tc repository.TestCase) testCaseResponse {
+func toTestCaseResponse(tc service.AdminProblemTestCase) testCaseResponse {
 	return testCaseResponse{
 		ID:         tc.ID,
 		Name:       tc.Name,
+		Input:      tc.Input,
+		Output:     tc.Output,
 		IsSample:   tc.IsSample,
 		Score:      tc.Score,
-		GroupName:  nullString(tc.GroupName),
+		GroupName:  "",
 		OrderIndex: tc.OrderIndex,
 	}
 }
