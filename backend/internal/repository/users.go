@@ -375,8 +375,9 @@ LIMIT $2`, username, limit)
 func (s *Store) ListSolvedProblemsByUsername(ctx context.Context, username string) ([]Problem, error) {
 	rows, err := s.pool.Query(ctx, `
 SELECT DISTINCT ON (p.id)
-       p.id, p.title, p.slug, p.statement_markdown, p.time_limit_ms,
-       p.memory_limit_kb, p.score, p.difficulty, p.is_public,
+       p.id, p.title, p.slug, p.statement_markdown, p.constraints_text,
+       p.input_format, p.output_format, p.time_limit_ms, p.memory_limit_kb,
+       p.score, p.difficulty, p.is_public,
        p.created_at, p.updated_at, p.created_by_user_id
 FROM submissions s
 JOIN users u ON u.id = s.user_id

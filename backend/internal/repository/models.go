@@ -64,6 +64,9 @@ type Problem struct {
 	Title             string
 	Slug              string
 	StatementMarkdown string
+	ConstraintsText   string
+	InputFormat       string
+	OutputFormat      string
 	TimeLimitMS       int
 	MemoryLimitKB     int
 	Score             int

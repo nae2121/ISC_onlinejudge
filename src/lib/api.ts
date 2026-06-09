@@ -465,7 +465,9 @@ function normalizeProblem(value: unknown): Problem {
       problem.statement ?? problem.statement_markdown ?? problem.statementMarkdown,
       ""
     ),
-    constraints: optionalString(problem.constraints),
+    constraints: optionalString(
+      problem.constraints ?? problem.constraints_text ?? problem.constraintsText
+    ),
     inputFormat: optionalString(problem.input_format ?? problem.inputFormat),
     outputFormat: optionalString(problem.output_format ?? problem.outputFormat),
     samples: normalizeSamples(source.test_cases ?? source.testCases ?? problem.samples),

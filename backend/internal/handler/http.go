@@ -238,6 +238,9 @@ type problemResponse struct {
 	Title             string `json:"title"`
 	Slug              string `json:"slug"`
 	StatementMarkdown string `json:"statement_markdown,omitempty"`
+	Constraints       string `json:"constraints,omitempty"`
+	InputFormat       string `json:"input_format,omitempty"`
+	OutputFormat      string `json:"output_format,omitempty"`
 	TimeLimitMS       int    `json:"time_limit_ms"`
 	MemoryLimitKB     int    `json:"memory_limit_kb"`
 	Score             int    `json:"score"`
@@ -298,6 +301,9 @@ func toProblemResponse(problem repository.Problem) problemResponse {
 		Title:             problem.Title,
 		Slug:              problem.Slug,
 		StatementMarkdown: problem.StatementMarkdown,
+		Constraints:       problem.ConstraintsText,
+		InputFormat:       problem.InputFormat,
+		OutputFormat:      problem.OutputFormat,
 		TimeLimitMS:       problem.TimeLimitMS,
 		MemoryLimitKB:     problem.MemoryLimitKB,
 		Score:             problem.Score,
