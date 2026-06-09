@@ -121,6 +121,24 @@ func (s *Server) handleAdminUserDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if parts[1] == "password" {
+		if r.Method != http.MethodPost {
+			writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+			return
+		}
+		var req adminPasswordRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid json")
+			return
+		}
+		if err := s.users.AdminUpdatePassword(r.Context(), id, req.Password); err != nil {
+			writeServiceError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	if r.Method != http.MethodPatch {
 		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
@@ -311,4 +329,8 @@ type adminRoleRequest struct {
 
 type adminActiveRequest struct {
 	IsActive *bool `json:"is_active"`
+}
+
+type adminPasswordRequest struct {
+	Password string `json:"password"`
 }
