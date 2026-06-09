@@ -19,7 +19,7 @@ const themeInitScript = `
 
 export const metadata: Metadata = {
   title: "Wait for Judge",
-  description: "A Next.js frontend for the local Judge0 demo",
+  description: "ISC Wait for Judge - Online Judge System",
   icons: {
     icon: "/static/image/WfJlogo.png",
     shortcut: "/static/image/WfJlogo.png",
