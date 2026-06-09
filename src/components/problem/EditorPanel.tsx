@@ -19,13 +19,6 @@ int main() {
     vector<long long> a(n);
     for (int i = 0; i < n; i++) cin >> a[i];
 
-    long long ans = 0, cur = 0;
-    for (int i = 0; i < n; i++) {
-        cur = max(0LL, cur + a[i]);
-        ans = max(ans, cur);
-    }
-
-    cout << ans << endl;
     return 0;
 }`;
 

@@ -118,6 +118,23 @@ func (s *UserService) UpdatePassword(ctx context.Context, userID int64, currentP
 	return s.store.RevokeSessionsByUserID(ctx, userID)
 }
 
+func (s *UserService) AdminUpdatePassword(ctx context.Context, targetUserID int64, newPassword string) error {
+	if len(newPassword) < 8 {
+		return ErrInvalidInput
+	}
+	if _, err := s.store.GetUserByID(ctx, targetUserID); err != nil {
+		return err
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	if err := s.store.UpdateUserPasswordHash(ctx, targetUserID, string(hash)); err != nil {
+		return err
+	}
+	return s.store.RevokeSessionsByUserID(ctx, targetUserID)
+}
+
 func (s *UserService) ListSubmissionsByUsername(ctx context.Context, username string, limit int) ([]repository.Submission, error) {
 	if _, err := s.GetByUsername(ctx, username); err != nil {
 		return nil, err
