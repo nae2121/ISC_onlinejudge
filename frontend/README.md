@@ -1,4 +1,4 @@
-# `src/` - Next.js フロントエンド
+# `frontend/` - Next.js フロントエンド
 
 このディレクトリは Judge0 demo のブラウザ UI です。以前の Flask テンプレート UI を Next.js + React に置き換えています。
 

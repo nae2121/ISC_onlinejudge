@@ -1,6 +1,6 @@
 # Next.js フロントエンド設計メモ
 
-この `src/` ディレクトリは、以前の Flask フロントエンドを Next.js + React に置き換えたものです。`judge0_flask/` は Judge0 と通信する API サーバとして残し、フロントエンド側では UI と同一オリジン proxy だけを担当します。
+この `frontend/` ディレクトリは、以前の Flask フロントエンドを Next.js + React に置き換えたものです。`judge0_flask/` は Judge0 と通信する API サーバとして残し、フロントエンド側では UI と同一オリジン proxy だけを担当します。
 
 ## 責務分割
 

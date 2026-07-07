@@ -10,7 +10,7 @@
 - `app_db`: 自作オンラインジャッジ本体のメタ情報用 PostgreSQL
 - `redis`: Judge0 と demo 用 Redis
 - `demo`: `judge0_flask/`。Judge0 へ提出し、結果を保存・取得する API
-- `web`: `src/`。Next.js + React のフロントエンドと同一オリジン proxy
+- `web`: `frontend/`。Next.js + React のフロントエンドと同一オリジン proxy
 - `backend_api`: `backend/`。Go の Web API
 - `judge_worker`: `backend/`。Go の採点 worker。現時点では `StubSandbox`
 
@@ -56,12 +56,12 @@ http://localhost:5174
 
 ## 開発メモ
 
-Next.js フロントエンドの設計メモは [src/ARCHITECTURE.md](src/ARCHITECTURE.md) にまとめています。
+Next.js フロントエンドの設計メモは [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) にまとめています。
 
-ローカルで Next.js だけを動かす場合は、先に `demo` と Judge0 を起動し、`src/` で以下を実行します。
+ローカルで Next.js だけを動かす場合は、先に `demo` と Judge0 を起動し、`frontend/` で以下を実行します。
 
 ```bash
-cd src
+cd frontend
 npm install
 DEMO_URL=http://localhost:5000 JUDGE0_URL=http://localhost:2359 npm run dev -- --hostname 0.0.0.0 --port 3000
 ```
