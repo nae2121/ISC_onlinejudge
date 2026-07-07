@@ -139,6 +139,40 @@ button {
   color: inherit;
 }
 
+.public-cyber-bg {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(20, 241, 216, 0.18), transparent 28rem),
+    radial-gradient(circle at 13% 40%, rgba(50, 102, 255, 0.13), transparent 24rem),
+    radial-gradient(circle at 82% 42%, rgba(168, 85, 247, 0.1), transparent 22rem),
+    linear-gradient(180deg, #02070c 0%, #04111a 55%, #02070c 100%);
+}
+
+.public-cyber-bg::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgba(20, 241, 216, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 241, 216, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+
+.public-cyber-bg::after {
+  position: absolute;
+  inset: auto -12% 0;
+  height: 42%;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, transparent, rgba(20, 241, 216, 0.4), transparent) 50% 72% / 72% 1px no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 46px, rgba(20, 241, 216, 0.22) 47px 48px, transparent 49px 96px),
+    linear-gradient(to top, rgba(20, 241, 216, 0.16), transparent 72%);
+  transform: perspective(520px) rotateX(62deg);
+  transform-origin: bottom;
+}
+
 .workbench {
   display: flex;
   height: 100dvh;
