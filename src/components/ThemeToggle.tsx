@@ -11,7 +11,7 @@ type ThemeToggleProps = {
 };
 
 export function ThemeToggle({ variant = "light" }: ThemeToggleProps) {
-  const [theme, setTheme] = useState<ThemeName>("light");
+  const [theme, setTheme] = useState<ThemeName>("dark");
 
   useEffect(() => {
     const nextTheme = readTheme();
@@ -60,7 +60,7 @@ export function ThemeToggle({ variant = "light" }: ThemeToggleProps) {
 
 function readTheme(): ThemeName {
   if (typeof window === "undefined") {
-    return "light";
+    return "dark";
   }
 
   try {
@@ -70,10 +70,10 @@ function readTheme(): ThemeName {
       return settings.theme;
     }
   } catch {
-    return "light";
+    return "dark";
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "dark";
 }
 
 function applyTheme(theme: ThemeName) {

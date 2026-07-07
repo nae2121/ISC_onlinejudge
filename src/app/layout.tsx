@@ -6,13 +6,13 @@ const themeInitScript = `
   try {
     const raw = window.localStorage.getItem("ace_playground_settings_v1");
     const theme = raw ? JSON.parse(raw).theme : undefined;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (theme === "dark" || (!theme && prefersDark)) {
-      document.documentElement.classList.add("dark");
-    } else {
+    if (theme === "light") {
       document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
     }
   } catch {
+    document.documentElement.classList.add("dark");
   }
 })();
 `;

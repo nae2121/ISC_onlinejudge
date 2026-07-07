@@ -446,12 +446,9 @@ function resolveInitialTheme(theme?: ThemeName): ThemeName {
     if (document.documentElement.classList.contains("dark")) {
       return "dark";
     }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
   }
 
-  return "light";
+  return "dark";
 }
 
 function guessAceModeFromJudge0Name(name: string) {
