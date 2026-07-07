@@ -1,15 +1,83 @@
 "use client";
 
-import { Loader2, LogIn, UserPlus } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Code2,
+  Loader2,
+  Lock,
+  Mail,
+  Trophy,
+  User
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { FormEvent } from "react";
+import type { FormEvent, InputHTMLAttributes } from "react";
 import { useEffect, useState } from "react";
 import { getMe, login, register } from "@/lib/api";
 
 type AuthFormProps = {
   mode: "login" | "register";
 };
+
+type AuthFieldProps = {
+  icon: LucideIcon;
+  label: string;
+} & InputHTMLAttributes<HTMLInputElement>;
+
+const featureItems = [
+  { icon: Code2, label: "Code" },
+  { icon: BarChart3, label: "Submit" },
+  { icon: Trophy, label: "Improve" }
+];
+
+const codeDecorations = [
+  {
+    text: "for (int i = 0; i < n; ++i) relax(edge[i]);",
+    className: "left-[5%] top-[14%] rotate-[-2deg]"
+  },
+  {
+    text: "dp[v] = min(dp[v], dp[u] + cost);",
+    className: "right-[7%] top-[18%] rotate-[2deg]"
+  },
+  {
+    text: "if (verdict === \"AC\") score += points;",
+    className: "left-[8%] bottom-[19%] rotate-[1deg]"
+  },
+  {
+    text: "queue.push({ node, dist: nextDist });",
+    className: "right-[10%] bottom-[15%] rotate-[-2deg]"
+  }
+];
+
+const judgeStatusDecorations = [
+  {
+    text: "AC",
+    className:
+      "left-[12%] top-[64%] border-emerald-300/20 text-emerald-300/30 shadow-[0_0_28px_rgba(52,211,153,0.14)]"
+  },
+  {
+    text: "WA",
+    className:
+      "left-[26%] top-[28%] border-rose-300/20 text-rose-200/20 shadow-[0_0_24px_rgba(244,63,94,0.10)]"
+  },
+  {
+    text: "TLE",
+    className:
+      "right-[25%] top-[58%] border-amber-300/20 text-amber-200/20 shadow-[0_0_24px_rgba(251,191,36,0.10)]"
+  },
+  {
+    text: "MLE",
+    className:
+      "right-[13%] top-[34%] border-cyan-300/20 text-cyan-200/25 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
+  },
+  {
+    text: "RE",
+    className:
+      "left-[42%] bottom-[10%] border-red-300/20 text-red-200/20 shadow-[0_0_24px_rgba(248,113,113,0.10)]"
+  }
+];
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
@@ -65,129 +133,309 @@ export function AuthForm({ mode }: AuthFormProps) {
   const isLogin = mode === "login";
 
   return (
-    <main className="min-h-dvh bg-zinc-50 px-4 py-8 text-zinc-950">
-      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-md items-center">
-        <form
-          className="w-full rounded-md border border-zinc-200 bg-white p-6 shadow-sm"
-          onSubmit={handleSubmit}
-        >
-          <div className="mb-6">
-            <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+    <main className="relative min-h-dvh overflow-x-hidden bg-[#020617] text-white">
+      <AuthBackgroundDecorations />
+
+      <div className="relative z-10 mx-auto grid min-h-dvh w-full max-w-[1520px] grid-cols-1 items-center gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(400px,520px)] lg:gap-14 lg:px-[7vw] xl:gap-20">
+        <BrandPanel isLogin={isLogin} />
+
+        <section className="flex w-full justify-center lg:justify-end">
+          <form
+            className="group relative w-full max-w-[520px] rounded-lg border border-emerald-200/20 bg-slate-950/70 px-5 py-7 shadow-[0_24px_80px_rgba(0,0,0,0.52),0_0_70px_rgba(45,212,191,0.16)] backdrop-blur-2xl transition duration-300 hover:border-cyan-300/40 hover:shadow-[0_28px_90px_rgba(0,0,0,0.58),0_0_82px_rgba(34,211,238,0.18)] sm:px-8 sm:py-9 lg:px-10"
+            onSubmit={handleSubmit}
+          >
+            <div className="pointer-events-none absolute inset-0 rounded-lg bg-[radial-gradient(circle_at_50%_0%,rgba(45,212,191,0.18),transparent_36%),linear-gradient(145deg,rgba(255,255,255,0.10),transparent_45%)]" />
+            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/70 to-transparent" />
+            <div className="pointer-events-none absolute -inset-px rounded-lg opacity-0 ring-1 ring-cyan-200/30 transition duration-300 group-hover:opacity-100" />
+
+            <div className="relative">
+              <div className="mb-6 flex flex-wrap items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.035] px-3 py-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-cyan-100/75 sm:justify-between sm:text-[0.68rem]">
+                <span>ISC_onlinejudge</span>
+                <span className="hidden sm:inline">Online Judge Platform</span>
+              </div>
+
+              <div className="flex flex-col items-center text-center">
+                <div className="relative flex h-16 w-16 items-center justify-center">
+                  <div className="absolute inset-[-10px] rounded-lg bg-emerald-400/20 blur-lg" />
+                  <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-cyan-100/30 bg-white shadow-[0_14px_36px_rgba(0,0,0,0.44)]">
+                    <img
+                      alt="Wait for Judge"
+                      className="h-full w-full object-cover"
+                      src="/static/image/WfJlogo.png"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-8 mt-6">
+                  <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
+                    Wait for Judge
+                  </h1>
+                  <p className="mt-3 font-mono text-sm text-emerald-200/90">
+                    Code. Submit. Improve.
+                  </p>
+                  <p className="mt-4 text-sm font-medium text-slate-300">
+                    {isLogin ? "ログインしてジャッジを待つ" : "新しい挑戦者を登録"}
+                  </p>
+                </div>
+
+                <div className="mb-8 grid w-full grid-cols-3 gap-2 rounded-md border border-white/10 bg-slate-900/40 p-2">
+                  {featureItems.map(({ icon: Icon, label }) => (
+                    <div
+                      className="flex min-h-16 flex-col items-center justify-center gap-2 rounded-md border border-white/5 bg-white/[0.025] px-2 text-cyan-100/80"
+                      key={label}
+                    >
+                      <Icon className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+                      <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em]">
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-6 flex items-center gap-3">
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-300/30 to-emerald-300/10" />
+                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-300">
+                  {isLogin ? "Login" : "Register"}
+                </h2>
+                <span className="h-px flex-1 bg-gradient-to-l from-transparent via-cyan-300/30 to-cyan-300/10" />
+              </div>
+
+              <div className="space-y-4">
+                {isLogin ? (
+                  <AuthField
+                    autoComplete="username"
+                    icon={User}
+                    label="username または email"
+                    onChange={(event) => setIdentity(event.target.value)}
+                    required
+                    value={identity}
+                  />
+                ) : (
+                  <>
+                    <AuthField
+                      autoComplete="username"
+                      icon={User}
+                      label="username"
+                      onChange={(event) => setUsername(event.target.value)}
+                      required
+                      value={username}
+                    />
+                    <AuthField
+                      autoComplete="name"
+                      icon={User}
+                      label="display name"
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      value={displayName}
+                    />
+                    <AuthField
+                      autoComplete="email"
+                      icon={Mail}
+                      label="email"
+                      onChange={(event) => setEmail(event.target.value)}
+                      required
+                      type="email"
+                      value={email}
+                    />
+                    <AuthField
+                      autoComplete="one-time-code"
+                      icon={Lock}
+                      label="pin code"
+                      onChange={(event) => setPinCode(event.target.value)}
+                      required
+                      value={pinCode}
+                    />
+                  </>
+                )}
+
+                <AuthField
+                  autoComplete={isLogin ? "current-password" : "new-password"}
+                  icon={Lock}
+                  label="password"
+                  minLength={8}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  type="password"
+                  value={password}
+                />
+              </div>
+
+              {error ? (
+                <p className="mt-4 rounded-md border border-rose-300/40 bg-rose-500/20 px-3 py-2 text-sm text-rose-100">
+                  {error}
+                </p>
+              ) : null}
+
+              {success ? (
+                <p className="mt-4 rounded-md border border-emerald-300/40 bg-emerald-500/20 px-3 py-2 text-sm text-emerald-100">
+                  {success}
+                </p>
+              ) : null}
+
+              <button
+                className="group/button relative mt-7 inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-md border border-emerald-200/30 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 text-base font-bold text-slate-950 shadow-[0_16px_42px_rgba(20,184,166,0.24)] transition duration-200 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-300 hover:shadow-[0_18px_52px_rgba(34,211,238,0.26)] focus:outline-none focus:ring-2 focus:ring-cyan-200/60 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-70"
+                disabled={submitting}
+                type="submit"
+              >
+                <span className="pointer-events-none absolute inset-0 translate-x-[-110%] bg-gradient-to-r from-transparent via-white/30 to-transparent transition duration-700 group-hover/button:translate-x-[110%]" />
+                <span className="relative inline-flex items-center gap-2">
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : null}
+                  {isLogin ? "ログイン" : "登録"}
+                </span>
+                <ArrowRight
+                  className="absolute right-5 h-5 w-5 transition group-hover/button:translate-x-1"
+                  aria-hidden="true"
+                />
+              </button>
+
               {isLogin ? (
-                <LogIn className="h-5 w-5" aria-hidden="true" />
+                <div className="mt-7">
+                  <div className="flex items-center gap-5 text-sm text-zinc-400">
+                    <span className="h-px flex-1 bg-white/20" />
+                    <span>または</span>
+                    <span className="h-px flex-1 bg-white/20" />
+                  </div>
+                  <div className="mt-6 text-center">
+                    <Link
+                      className="text-base font-semibold text-emerald-300 transition hover:text-cyan-200"
+                      href="/register"
+                    >
+                      新規登録へ
+                    </Link>
+                  </div>
+                </div>
               ) : (
-                <UserPlus className="h-5 w-5" aria-hidden="true" />
+                <div className="mt-7 text-center">
+                  <Link
+                    className="text-base font-semibold text-emerald-300 transition hover:text-cyan-200"
+                    href="/login"
+                  >
+                    ログインへ
+                  </Link>
+                </div>
               )}
             </div>
-            <h1 className="text-2xl font-semibold tracking-normal">
-              {isLogin ? "ログイン" : "ユーザー登録"}
-            </h1>
-          </div>
-
-          <div className="space-y-4">
-            {isLogin ? (
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium text-zinc-700">
-                  username または email
-                </span>
-                <input
-                  className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-                  onChange={(event) => setIdentity(event.target.value)}
-                  required
-                  value={identity}
-                />
-              </label>
-            ) : (
-              <>
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium text-zinc-700">username</span>
-                  <input
-                    className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-                    onChange={(event) => setUsername(event.target.value)}
-                    required
-                    value={username}
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium text-zinc-700">
-                    display name
-                  </span>
-                  <input
-                    className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    value={displayName}
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium text-zinc-700">email</span>
-                  <input
-                    className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                    type="email"
-                    value={email}
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium text-zinc-700">pin code</span>
-                  <input
-                    className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-                    onChange={(event) => setPinCode(event.target.value)}
-                    required
-                    value={pinCode}
-                  />
-                </label>
-              </>
-            )}
-
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-700">password</span>
-              <input
-                className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-                minLength={8}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                type="password"
-                value={password}
-              />
-            </label>
-          </div>
-
-          {error ? (
-            <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-              {error}
-            </p>
-          ) : null}
-
-          {success ? (
-            <p className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-              {success}
-            </p>
-          ) : null}
-
-          <button
-            className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 disabled:cursor-wait disabled:opacity-70"
-            disabled={submitting}
-            type="submit"
-          >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-            {isLogin ? "ログイン" : "登録"}
-          </button>
-
-          <div className="mt-5 text-center text-sm text-zinc-600">
-            {isLogin ? (
-              <Link className="font-medium text-teal-700 hover:text-teal-800" href="/register">
-                新規登録へ
-              </Link>
-            ) : (
-              <Link className="font-medium text-teal-700 hover:text-teal-800" href="/login">
-                ログインへ
-              </Link>
-            )}
-          </div>
-        </form>
+          </form>
+        </section>
       </div>
     </main>
+  );
+}
+
+function AuthBackgroundDecorations() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(16,185,129,0.22),transparent_30%),radial-gradient(circle_at_76%_12%,rgba(34,211,238,0.18),transparent_28%),radial-gradient(circle_at_48%_82%,rgba(20,184,166,0.14),transparent_34%),linear-gradient(135deg,#020617_0%,#061316_44%,#020617_100%)]" />
+      <div className="absolute inset-0 opacity-[0.2] [background-image:linear-gradient(rgba(45,212,191,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.14)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_26%,transparent_78%)]" />
+      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(125,211,252,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(52,211,153,0.28)_1px,transparent_1px)] [background-size:176px_176px]" />
+      <div className="absolute left-[-24%] top-[8%] h-80 w-[46rem] rotate-[-12deg] bg-[linear-gradient(90deg,rgba(16,185,129,0.18),transparent_70%)] blur-3xl" />
+      <div className="absolute right-[-28%] bottom-[4%] h-80 w-[52rem] rotate-[10deg] bg-[linear-gradient(90deg,transparent,rgba(34,211,238,0.14),transparent)] blur-3xl" />
+
+      {codeDecorations.map(({ text, className }) => (
+        <span
+          className={`absolute hidden max-w-[22rem] select-none font-mono text-xs text-cyan-100/10 sm:block ${className}`}
+          key={text}
+        >
+          {text}
+        </span>
+      ))}
+
+      {judgeStatusDecorations.map(({ text, className }) => (
+        <span
+          className={`absolute hidden rounded-md border bg-slate-950/20 px-3 py-1 font-mono text-lg font-black tracking-[0.22em] backdrop-blur-sm sm:block ${className}`}
+          key={text}
+        >
+          {text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function AuthField({ icon: Icon, label, className = "", ...inputProps }: AuthFieldProps) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-slate-200">{label}</span>
+      <span className="relative block">
+        <input
+          className={`peer h-12 w-full rounded-md border border-white/20 bg-slate-950/50 px-4 pr-12 text-base text-white outline-none transition duration-200 placeholder:text-slate-500 hover:border-emerald-200/30 focus:border-cyan-300 focus:bg-slate-900/80 focus:shadow-[0_0_0_1px_rgba(45,212,191,0.28),0_0_24px_rgba(34,211,238,0.14)] focus:ring-2 focus:ring-cyan-300/20 ${className}`}
+          {...inputProps}
+        />
+        <Icon
+          className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-300/80 transition duration-200 peer-focus:text-cyan-200 peer-focus:drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]"
+          aria-hidden="true"
+        />
+      </span>
+    </label>
+  );
+}
+
+function BrandPanel({ isLogin }: { isLogin: boolean }) {
+  return (
+    <section className="relative hidden min-h-[680px] items-center lg:flex">
+      <div className="relative w-full max-w-[690px]">
+        <div className="absolute -left-10 top-8 h-36 w-36 rounded-lg border border-emerald-300/10 bg-emerald-300/[0.025] shadow-[0_0_60px_rgba(45,212,191,0.08)]" />
+        <div className="absolute right-16 top-0 h-20 w-20 rounded-lg border border-cyan-300/10 bg-cyan-300/[0.025]" />
+
+        <div className="relative">
+          <div className="inline-flex items-center gap-3 rounded-md border border-emerald-200/20 bg-slate-950/50 px-4 py-2 font-mono text-xs uppercase tracking-[0.18em] text-emerald-200/90 backdrop-blur-md">
+            <span className="h-2 w-2 rounded-sm bg-emerald-300 shadow-[0_0_16px_rgba(52,211,153,0.8)]" />
+            ISC_onlinejudge
+          </div>
+
+          <h2 className="mt-8 max-w-3xl text-5xl font-bold tracking-normal text-white xl:text-6xl">
+            {isLogin ? "Wait for Judge" : "Join Wait for Judge"}
+          </h2>
+          <p className="mt-5 font-mono text-lg text-cyan-100/90">Code. Submit. Improve.</p>
+          <p className="mt-5 max-w-xl text-base font-medium leading-8 text-slate-300">
+            An online judge platform for competitive programming,
+            built to make the flow from submission to judging to improvement quiet, fast, and seamless.
+
+          </p>
+
+          <div className="mt-10 max-w-xl rounded-lg border border-white/10 bg-slate-950/50 p-5 shadow-[0_20px_70px_rgba(0,0,0,0.32)] backdrop-blur-md">
+            <div className="flex items-center gap-2 border-b border-white/10 pb-4">
+              <span className="h-2.5 w-2.5 rounded-sm bg-rose-300/70" />
+              <span className="h-2.5 w-2.5 rounded-sm bg-amber-300/70" />
+              <span className="h-2.5 w-2.5 rounded-sm bg-emerald-300/70" />
+              <span className="ml-auto font-mono text-xs text-cyan-100/60">judgectl</span>
+            </div>
+
+            <div className="mt-5 space-y-3 font-mono text-sm text-slate-300">
+              <p>
+                <span className="text-cyan-300">$</span> submit main.cpp --problem A
+              </p>
+              <div className="grid grid-cols-[88px_1fr_42px] items-center gap-3">
+                <span className="text-slate-500">compile</span>
+                <span className="h-px bg-gradient-to-r from-emerald-300/70 to-transparent" />
+                <span className="text-right text-emerald-300">OK</span>
+              </div>
+              <div className="grid grid-cols-[88px_1fr_42px] items-center gap-3">
+                <span className="text-slate-500">tests</span>
+                <span className="h-px bg-gradient-to-r from-cyan-300/70 to-transparent" />
+                <span className="text-right text-cyan-200">42/42</span>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {["AC", "WA", "TLE", "MLE", "RE"].map((status) => (
+                  <span
+                    className="rounded-md border border-white/10 bg-white/[0.035] px-2.5 py-1 text-xs font-semibold text-slate-300"
+                    key={status}
+                  >
+                    {status}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p className="absolute bottom-0 left-[-4vw] text-sm text-slate-500">
+        © 2026 Wait for Judge. All rights reserved.
+      </p>
+    </section>
   );
 }
 

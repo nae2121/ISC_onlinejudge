@@ -242,6 +242,8 @@ func judge0HTTPError(resp *http.Response) error {
 
 func judge0Status(status judge0StatusInfo) string {
 	switch status.ID {
+	case 1, 2:
+		return repository.SubmissionWaitingJudge
 	case 3:
 		return repository.SubmissionAccepted
 	case 4:
@@ -250,7 +252,11 @@ func judge0Status(status judge0StatusInfo) string {
 		return repository.SubmissionTLE
 	case 6:
 		return repository.SubmissionCompileError
-	case 13, 14:
+	case 8:
+		return repository.SubmissionOutputLimit
+	case 7, 9, 10, 11, 12, 14:
+		return repository.SubmissionRuntimeError
+	case 13:
 		return repository.SubmissionInternalErr
 	}
 
@@ -260,8 +266,6 @@ func judge0Status(status judge0StatusInfo) string {
 		return repository.SubmissionAccepted
 	case strings.Contains(description, "wrong"):
 		return repository.SubmissionWrongAnswer
-	case strings.Contains(description, "time"):
-		return repository.SubmissionTLE
 	case strings.Contains(description, "memory"):
 		return repository.SubmissionMLE
 	case strings.Contains(description, "compilation"):
@@ -270,6 +274,8 @@ func judge0Status(status judge0StatusInfo) string {
 		return repository.SubmissionOutputLimit
 	case strings.Contains(description, "runtime"):
 		return repository.SubmissionRuntimeError
+	case strings.Contains(description, "time"):
+		return repository.SubmissionTLE
 	default:
 		return repository.SubmissionInternalErr
 	}

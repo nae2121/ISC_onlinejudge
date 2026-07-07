@@ -105,7 +105,7 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
   const runCode = useCallback(
     async (input: string, expectedOutput?: string) => {
       setIsRunning(true);
-      setRunResult(null);
+      setRunResult({ status: "WJ", stdout: "" });
 
       try {
         const result = await submitAndPollRun({
@@ -141,14 +141,36 @@ export function ProblemWorkspace({ slug, user }: ProblemWorkspaceProps) {
         problemSlug: problem.slug,
         sourceCode: code,
       });
+      const alreadySolved = !!problem.solved;
 
-      for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS && submission.status === "WJ"; attempt += 1) {
+      setSubmitResult({
+        alreadySolved,
+        score: 0,
+        scoreAdded: false,
+        status: submissionStatusToJudgeStatus(submission),
+        submissionId: submission.id,
+      });
+      setRunResult(submissionToRunResult(submission));
+
+      for (
+        let attempt = 0;
+        attempt < POLL_MAX_ATTEMPTS && submission.status === "WJ";
+        attempt += 1
+      ) {
         await sleep(POLL_INTERVAL_MS);
         submission = await getSubmission(submission.id);
+        setSubmitResult((current) =>
+          current
+            ? {
+                ...current,
+                status: submissionStatusToJudgeStatus(submission),
+              }
+            : current
+        );
+        setRunResult(submissionToRunResult(submission));
       }
 
       const status = submissionStatusToJudgeStatus(submission);
-      const alreadySolved = !!problem.solved;
       const scoreAdded = status === "AC" && !alreadySolved;
 
       if (status === "AC") {
@@ -331,10 +353,6 @@ function judge0ResultToRunResult(
   expectedOutput: string | undefined,
   judgeSettings: JudgeSettings
 ): RunResult {
-  const statusObject = value.status && typeof value.status === "object" && !Array.isArray(value.status)
-    ? (value.status as Record<string, unknown>)
-    : {};
-  const description = typeof statusObject.description === "string" ? statusObject.description : "";
   const forceDecode = !!judgeSettings.base64;
   const stdout = safeDecode(stringValue(value.decoded_stdout ?? value.stdout), forceDecode);
   const stderr = safeDecode(stringValue(value.decoded_stderr ?? value.stderr), forceDecode);
@@ -342,11 +360,13 @@ function judge0ResultToRunResult(
     stringValue(value.decoded_compile_output ?? value.compile_output),
     forceDecode
   );
-  const status = expectedOutput && mapJudge0Status(description) === "AC"
-    ? stdout.trim() === expectedOutput.trim()
-      ? "AC"
-      : "WA"
-    : mapJudge0Status(description);
+  const mappedStatus = mapJudge0Status(value.status);
+  const status =
+    expectedOutput && mappedStatus === "AC"
+      ? stdout.trim() === expectedOutput.trim()
+        ? "AC"
+        : "WA"
+      : mappedStatus;
   const time = typeof value.time === "number" ? value.time : Number(value.time);
 
   return {
@@ -358,19 +378,49 @@ function judge0ResultToRunResult(
   };
 }
 
-function mapJudge0Status(description: string): JudgeStatus {
+function mapJudge0Status(statusValue: unknown): JudgeStatus {
+  const statusObject = isRecord(statusValue) ? statusValue : {};
+  const idValue = statusObject.id;
+  const id =
+    typeof idValue === "number"
+      ? idValue
+      : typeof idValue === "string" && idValue.trim()
+        ? Number(idValue)
+        : NaN;
+
+  if (Number.isFinite(id)) {
+    if (id === 1 || id === 2) return "WJ";
+    if (id === 3) return "AC";
+    if (id === 4) return "WA";
+    if (id === 5) return "TLE";
+    if (id === 6) return "CE";
+    if (id === 8) return "OLE";
+    if (id === 13) return "IE";
+    if (id === 7 || (id >= 9 && id <= 12) || id === 14) return "RE";
+  }
+
+  const description =
+    typeof statusObject.description === "string"
+      ? statusObject.description
+      : typeof statusValue === "string"
+        ? statusValue
+        : "";
   const value = description.toLowerCase();
+  if (value.includes("queue") || value.includes("processing") || value.includes("waiting")) {
+    return "WJ";
+  }
   if (value.includes("accepted")) return "AC";
   if (value.includes("wrong")) return "WA";
-  if (value.includes("time")) return "TLE";
   if (value.includes("memory")) return "MLE";
   if (value.includes("compilation")) return "CE";
+  if (value.includes("output") || value.includes("sigxfsz")) return "OLE";
   if (value.includes("runtime")) return "RE";
-  if (value.includes("output")) return "OLE";
+  if (value.includes("time")) return "TLE";
   return "IE";
 }
 
 function submissionStatusToJudgeStatus(submission: Submission): JudgeStatus {
+  if (submission.status === "WJ") return "WJ";
   if (submission.status === "AC") return "AC";
   if (submission.status === "WA") return "WA";
   if (submission.status === "TLE") return "TLE";
@@ -379,6 +429,16 @@ function submissionStatusToJudgeStatus(submission: Submission): JudgeStatus {
   if (submission.status === "CE") return "CE";
   if (submission.status === "OLE") return "OLE";
   return "IE";
+}
+
+function submissionToRunResult(submission: Submission): RunResult {
+  return {
+    status: submissionStatusToJudgeStatus(submission),
+    stdout: "",
+    stderr: submission.errorMessage,
+    timeMs: submission.maxTimeMs || undefined,
+    memoryKb: submission.maxMemoryKb || undefined,
+  };
 }
 
 function stringValue(value: unknown) {

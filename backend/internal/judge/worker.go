@@ -218,6 +218,9 @@ func (w *Worker) processJob(ctx context.Context, job queue.Job) error {
 		if err != nil {
 			return w.failSubmission(ctx, job.ID, submission.ID, fmt.Errorf("insert result: %w", err))
 		}
+		if status != repository.SubmissionAccepted {
+			break
+		}
 	}
 
 	if err := w.Store.UpdateSubmissionFinal(ctx, submission.ID, finalStatus, totalScore, maxTime, maxMemory); err != nil {

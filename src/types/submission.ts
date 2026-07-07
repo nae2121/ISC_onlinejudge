@@ -1,4 +1,4 @@
-export type JudgeStatus = "AC" | "WA" | "TLE" | "MLE" | "RE" | "CE" | "OLE" | "IE";
+export type JudgeStatus = "WJ" | "AC" | "WA" | "TLE" | "MLE" | "RE" | "CE" | "OLE" | "IE";
 
 export type RunResult = {
   status: JudgeStatus;
