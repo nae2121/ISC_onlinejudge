@@ -609,7 +609,7 @@ export function JudgeWorkbench() {
   const [languageToolsLoaded, setLanguageToolsLoaded] = useState(false);
   const [languages, setLanguages] = useState<JudgeLanguage[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState("");
-  const [theme, setTheme] = useState<ThemeName>("light");
+  const [theme, setTheme] = useState<ThemeName>("dark");
   const [liveAutocomplete, setLiveAutocomplete] = useState(false);
   const [fontSize, setFontSize] = useState(14);
   const [judgeSettings, setJudgeSettings] = useState<JudgeSettings>({
@@ -702,7 +702,7 @@ export function JudgeWorkbench() {
     });
 
     savedLanguageRef.current = appSettings.languageId ?? appSettings.mode ?? null;
-    setTheme(appSettings.theme === "dark" ? "dark" : "light");
+    setTheme(appSettings.theme === "light" ? "light" : "dark");
     setFontSize(typeof appSettings.font === "number" ? appSettings.font : 14);
     setLiveAutocomplete(!!appSettings.live);
     setJudgeSettings(persistedJudgeSettings);
