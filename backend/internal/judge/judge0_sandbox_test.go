@@ -153,6 +153,53 @@ func TestJudge0SandboxCapsMaxFileSize(t *testing.T) {
 	}
 }
 
+func TestJudge0StatusMapsKnownStatuses(t *testing.T) {
+	tests := []struct {
+		name        string
+		status      judge0StatusInfo
+		want        string
+	}{
+		{
+			name:   "in queue",
+			status: judge0StatusInfo{ID: 1, Description: "In Queue"},
+			want:   repository.SubmissionWaitingJudge,
+		},
+		{
+			name:   "processing",
+			status: judge0StatusInfo{ID: 2, Description: "Processing"},
+			want:   repository.SubmissionWaitingJudge,
+		},
+		{
+			name:   "output limit",
+			status: judge0StatusInfo{ID: 8, Description: "Runtime Error (SIGXFSZ)"},
+			want:   repository.SubmissionOutputLimit,
+		},
+		{
+			name:   "runtime error",
+			status: judge0StatusInfo{ID: 9, Description: "Runtime Error (SIGFPE)"},
+			want:   repository.SubmissionRuntimeError,
+		},
+		{
+			name:   "runtime description without id",
+			status: judge0StatusInfo{Description: "Runtime Error (Other)"},
+			want:   repository.SubmissionRuntimeError,
+		},
+		{
+			name:   "internal error",
+			status: judge0StatusInfo{ID: 13, Description: "Internal Error"},
+			want:   repository.SubmissionInternalErr,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := judge0Status(tt.status); got != tt.want {
+				t.Fatalf("judge0Status() = %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
 func writeJudge0TestJSON(t *testing.T, w http.ResponseWriter, payload any) {
 	t.Helper()
 	w.Header().Set("Content-Type", "application/json")
