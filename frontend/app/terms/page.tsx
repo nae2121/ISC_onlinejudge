@@ -6,134 +6,134 @@ const sections: Array<{
   title: string;
 }> = [
   {
-    title: "第1条（本サービスの目的）",
+    title: "Article 1. Purpose of the Service",
     body: [
-      "本サービスは、競技プログラミング、プログラミング学習、コンテスト運営、学内サークル活動等を支援することを目的としたオンラインジャッジサービスです。",
-      "利用者は、問題への解答提出、採点結果の確認、提出履歴の管理、コンテストへの参加など、本サービスが提供する機能を利用できます。",
+      "The Service is an online judge service designed to support competitive programming, programming education, contest operations, campus club activities, and related learning activities.",
+      "Users may use the features provided by the Service, including submitting solutions to problems, checking judging results, managing submission history, and participating in contests.",
     ],
   },
   {
-    title: "第2条（アカウント登録）",
+    title: "Article 2. Account Registration",
     items: [
-      "利用者は、本サービスの利用にあたり、運営が定める方法によりアカウント登録を行うものとします。",
-      "利用者は、登録情報について正確な情報を提供するものとします。",
-      "運営は、登録内容に不備がある場合、または運営上不適切と判断した場合、アカウント登録を承認しないことがあります。",
-      "利用者は、自身のアカウント情報を適切に管理するものとし、第三者に利用させてはなりません。",
-      "アカウントの不正利用により生じた損害について、運営は運営に故意または重大な過失がある場合を除き、責任を負いません。",
+      "Users shall register an account using the method specified by the Operations Team in order to use the Service.",
+      "Users shall provide accurate registration information.",
+      "The Operations Team may refuse to approve account registration if the registration information is incomplete or if the Operations Team determines that approval is inappropriate for operational reasons.",
+      "Users shall properly manage their own account information and shall not allow third parties to use their accounts.",
+      "The Operations Team shall not be liable for damages arising from unauthorized account use, except in cases of intentional misconduct or gross negligence by the Operations Team.",
     ],
   },
   {
-    title: "第3条（利用者の責任）",
+    title: "Article 3. User Responsibilities",
     items: [
-      "利用者は、本サービス上で行うすべての行為について責任を負うものとします。",
-      "利用者は、提出するソースコード、入力データ、コメント、プロフィール情報その他の内容について、第三者の権利を侵害しないよう注意するものとします。",
-      "利用者は、本サービスを学習、練習、コンテスト参加その他運営が認める目的の範囲で利用するものとします。",
+      "Users are responsible for all actions they take on the Service.",
+      "Users shall ensure that source code, input data, comments, profile information, and other content they submit do not infringe the rights of any third party.",
+      "Users shall use the Service only for learning, practice, contest participation, and other purposes approved by the Operations Team.",
     ],
   },
   {
-    title: "第4条（禁止事項）",
-    body: ["利用者は、本サービスの利用にあたり、以下の行為を行ってはなりません。"],
+    title: "Article 4. Prohibited Conduct",
+    body: ["Users shall not engage in any of the following acts when using the Service."],
     items: [
-      "法令または公序良俗に反する行為",
-      "他の利用者、運営、第三者に迷惑、不利益、損害を与える行為",
-      "他人のアカウントを使用する行為、または他人になりすます行為",
-      "不正アクセス、脆弱性探索、攻撃、過度なリクエスト送信、DoS攻撃その他本サービスの運用を妨害する行為",
-      "採点環境、サーバー、データベース、API等に対して不正な操作を試みる行為",
-      "コンテスト中の不正行為、解答の共有、なりすまし提出、順位の不正操作その他公平性を損なう行為",
-      "悪意のあるコード、マルウェア、破壊的な処理、外部サービスへの攻撃を目的としたコードを提出する行為",
-      "本サービスの仕様上想定されていない方法でシステムを利用する行為",
-      "著作権、商標権、プライバシー権その他第三者の権利を侵害する行為",
-      "運営が不適切と判断する行為",
+      "Acts that violate laws, regulations, or public order and morals.",
+      "Acts that cause inconvenience, disadvantage, or damage to other users, the Operations Team, or third parties.",
+      "Using another person's account or impersonating another person.",
+      "Unauthorized access, vulnerability probing, attacks, excessive requests, denial-of-service attacks, or any other act that interferes with the operation of the Service.",
+      "Attempting unauthorized operations against judging environments, servers, databases, APIs, or related systems.",
+      "Cheating during contests, sharing answers, submitting under another identity, manipulating rankings, or any other act that undermines fairness.",
+      "Submitting malicious code, malware, destructive processes, or code intended to attack external services.",
+      "Using the system in a way that is not intended by the specifications of the Service.",
+      "Infringing copyrights, trademarks, privacy rights, or other rights of third parties.",
+      "Any other act that the Operations Team determines to be inappropriate.",
     ],
   },
   {
-    title: "第5条（提出コードおよびコンテンツ）",
+    title: "Article 5. Submitted Code and Content",
     items: [
-      "利用者が本サービスに提出したソースコード、解答、コメント、プロフィール情報その他のコンテンツの権利は、原則として利用者に帰属します。",
-      "利用者は、運営が本サービスの提供、採点、表示、保存、分析、改善、コンテスト運営、不正行為調査のために、提出内容を必要な範囲で利用することを許可するものとします。",
-      "運営は、問題の解説、ランキング、提出履歴、統計情報等として、利用者の提出情報の一部を表示する場合があります。",
-      "運営は、運営上必要と判断した場合、不適切なコンテンツを非公開化、削除、または修正することがあります。",
+      "Rights to source code, solutions, comments, profile information, and other content submitted by users to the Service generally remain with the users.",
+      "Users grant the Operations Team permission to use submitted content to the extent necessary for providing the Service, judging, displaying, storing, analyzing, improving the Service, operating contests, and investigating misconduct.",
+      "The Operations Team may display portions of user submission information as explanations, rankings, submission history, statistical information, or similar features.",
+      "The Operations Team may make inappropriate content private, delete it, or modify it when deemed necessary for operational reasons.",
     ],
   },
   {
-    title: "第6条（問題文・教材等の権利）",
+    title: "Article 6. Rights to Problems and Educational Materials",
     items: [
-      "本サービス上で提供される問題文、テストケース、解説、画像、デザイン、ロゴ、システム等に関する権利は、運営または正当な権利を有する第三者に帰属します。",
-      "利用者は、運営の許可なく、本サービス上の問題文、テストケース、解説等を無断で転載、複製、再配布してはなりません。",
-      "ただし、運営が明示的に許可した範囲での利用については、この限りではありません。",
+      "Rights to problem statements, test cases, explanations, images, designs, logos, systems, and other materials provided on the Service belong to the Operations Team or third parties with valid rights.",
+      "Users shall not reproduce, copy, redistribute, or otherwise use problem statements, test cases, explanations, or similar materials from the Service without permission from the Operations Team.",
+      "This restriction does not apply to uses expressly permitted by the Operations Team.",
     ],
   },
   {
-    title: "第7条（コンテストの公平性）",
+    title: "Article 7. Contest Fairness",
     items: [
-      "利用者は、コンテストに参加する場合、運営が定めるルールに従うものとします。",
-      "コンテスト中に、他者の解答を利用する行為、解答を共有する行為、複数アカウントを利用する行為、その他公平性を損なう行為を禁止します。",
-      "運営は、不正行為が疑われる場合、提出履歴、アクセスログ、実行結果その他必要な情報を確認することがあります。",
-      "運営は、不正行為が確認された場合、順位の無効化、提出の無効化、アカウント停止その他必要な措置を行うことがあります。",
+      "Users shall follow the rules set by the Operations Team when participating in contests.",
+      "During contests, users shall not use another person's solution, share answers, use multiple accounts, or engage in any other act that undermines fairness.",
+      "If misconduct is suspected, the Operations Team may review submission history, access logs, execution results, and other necessary information.",
+      "If misconduct is confirmed, the Operations Team may invalidate rankings, invalidate submissions, suspend accounts, or take other necessary measures.",
     ],
   },
   {
-    title: "第8条（採点環境）",
+    title: "Article 8. Judging Environment",
     items: [
-      "本サービスでは、提出されたコードを隔離された実行環境で実行し、採点を行います。",
-      "採点結果、実行時間、メモリ使用量等は、環境やシステム状況により変動する場合があります。",
-      "運営は、採点結果の正確性および継続的な動作を保証するものではありません。",
-      "採点環境への攻撃、制限回避、システム情報の取得を目的とした提出は禁止します。",
+      "The Service executes submitted code in an isolated execution environment for judging.",
+      "Judging results, execution time, memory usage, and related metrics may vary depending on the environment and system conditions.",
+      "The Operations Team does not guarantee the accuracy of judging results or continuous operation of the judging system.",
+      "Submissions intended to attack the judging environment, bypass restrictions, or obtain system information are prohibited.",
     ],
   },
   {
-    title: "第9条（サービスの変更・停止）",
+    title: "Article 9. Changes, Suspension, and Termination of the Service",
     items: [
-      "運営は、必要に応じて、本サービスの内容を変更、追加、停止、終了することがあります。",
-      "運営は、保守、障害対応、セキュリティ対応、システム更新その他必要がある場合、事前の通知なく本サービスの全部または一部を停止することがあります。",
-      "本サービスの変更、停止、終了により利用者に損害が生じた場合でも、運営は運営に故意または重大な過失がある場合を除き、責任を負いません。",
+      "The Operations Team may change, add to, suspend, or terminate all or part of the Service as necessary.",
+      "The Operations Team may suspend all or part of the Service without prior notice for maintenance, incident response, security measures, system updates, or other necessary reasons.",
+      "The Operations Team shall not be liable for damages incurred by users due to changes, suspension, or termination of the Service, except in cases of intentional misconduct or gross negligence by the Operations Team.",
     ],
   },
   {
-    title: "第10条（アカウント停止・削除）",
+    title: "Article 10. Account Suspension and Deletion",
     body: [
-      "運営は、利用者が以下のいずれかに該当すると判断した場合、事前の通知なくアカウントの利用停止、提出の削除、コンテスト結果の無効化、その他必要な措置を行うことがあります。",
+      "If the Operations Team determines that a user falls under any of the following categories, the Operations Team may suspend the account, delete submissions, invalidate contest results, or take other necessary measures without prior notice.",
     ],
     items: [
-      "本規約に違反した場合",
-      "不正利用、攻撃、迷惑行為が確認された場合",
-      "登録情報に虚偽または不備がある場合",
-      "長期間利用がない場合",
-      "その他、運営が本サービスの運営上必要と判断した場合",
+      "The user violates these Terms.",
+      "Unauthorized use, attacks, or nuisance behavior are confirmed.",
+      "Registration information is false or incomplete.",
+      "The account has been inactive for an extended period.",
+      "The Operations Team otherwise determines that action is necessary for operating the Service.",
     ],
   },
   {
-    title: "第11条（免責事項）",
+    title: "Article 11. Disclaimers",
     items: [
-      "本サービスは、現状有姿で提供されるものとし、運営は本サービスの完全性、正確性、有用性、継続性、安全性を保証しません。",
-      "運営は、本サービスの利用により発生した損害について、運営に故意または重大な過失がある場合を除き、責任を負いません。",
-      "利用者間または利用者と第三者との間で発生したトラブルについて、運営は責任を負いません。",
-      "利用者は、自身の提出コード、学習データ、アカウント情報等を必要に応じて自己の責任で管理するものとします。",
+      "The Service is provided as is, and the Operations Team does not guarantee completeness, accuracy, usefulness, continuity, or safety of the Service.",
+      "The Operations Team shall not be liable for damages arising from use of the Service, except in cases of intentional misconduct or gross negligence by the Operations Team.",
+      "The Operations Team shall not be responsible for disputes between users or between users and third parties.",
+      "Users shall manage their own submitted code, learning data, account information, and related materials at their own responsibility as necessary.",
     ],
   },
   {
-    title: "第12条（個人情報・ログの取扱い）",
+    title: "Article 12. Personal Information and Logs",
     items: [
-      "運営は、本サービスの提供、本人確認、利用状況の把握、不正利用の防止、セキュリティ対応、サービス改善のために、利用者情報、提出履歴、アクセスログ、実行結果等を取得・保存することがあります。",
-      "運営は、取得した情報を適切に管理し、法令に基づく場合または運営上必要な場合を除き、第三者に不必要に開示しません。",
-      "個人情報の詳細な取扱いについては、別途定めるプライバシーポリシーに従うものとします。",
+      "The Operations Team may collect and store user information, submission history, access logs, execution results, and related information to provide the Service, verify identity, understand usage, prevent unauthorized use, respond to security issues, and improve the Service.",
+      "The Operations Team shall appropriately manage collected information and shall not unnecessarily disclose it to third parties except where required by law or necessary for operations.",
+      "Detailed handling of personal information shall be governed by the separately established Privacy Policy.",
     ],
   },
   {
-    title: "第13条（規約の変更）",
+    title: "Article 13. Changes to These Terms",
     items: [
-      "運営は、必要に応じて本規約を変更することがあります。",
-      "規約を変更した場合、運営は本サービス上での掲示その他適切な方法により利用者へ周知します。",
-      "規約変更後に利用者が本サービスを利用した場合、変更後の規約に同意したものとみなします。",
+      "The Operations Team may change these Terms as necessary.",
+      "When these Terms are changed, the Operations Team shall notify users by posting on the Service or by another appropriate method.",
+      "If a user continues to use the Service after the Terms are changed, the user shall be deemed to have agreed to the revised Terms.",
     ],
   },
   {
-    title: "第14条（準拠法）",
-    body: ["本規約は、日本法に準拠して解釈されるものとします。"],
+    title: "Article 14. Governing Law",
+    body: ["These Terms shall be governed by and interpreted in accordance with the laws of Japan."],
   },
   {
-    title: "第15条（お問い合わせ）",
-    body: ["本サービスに関するお問い合わせは、運営が指定する方法により行うものとします。"],
+    title: "Article 15. Contact",
+    body: ["Inquiries regarding the Service shall be made using the method specified by the Operations Team."],
   },
 ];
 
@@ -141,19 +141,18 @@ export default function TermsPage() {
   return (
     <PublicPageShell
       active="terms"
-      description="Wait for Judge の利用規約を定めるものです。"
+      description="These Terms of Service define the conditions for using Wait for Judge."
       eyebrow="Terms of Service"
       title="Wait for Judge Terms of Service"
     >
       <article className="rounded-md border border-cyan-300/15 bg-[#06131c] p-6 shadow-[0_0_32px_rgba(20,241,216,0.06)] sm:p-8">
         <div className="space-y-4 border-b border-cyan-300/15 pb-8 text-sm leading-8 text-zinc-300">
           <p>
-            この利用規約（以下「本規約」といいます。）は、Wait for Judge
-            運営チーム（以下「運営」といいます。）が提供するオンラインジャッジサービス「Wait
-            for Judge / WfJ」（以下「本サービス」といいます。）の利用条件を定めるものです。
+            These Terms of Service define the conditions for using the online judge service
+            "Wait for Judge / WfJ" provided by the Wait for Judge Operations Team.
           </p>
           <p>
-            本サービスを利用する方（以下「利用者」といいます。）は、本規約に同意したうえで本サービスを利用するものとします。
+            Users shall use the Service only after agreeing to these Terms.
           </p>
         </div>
 
@@ -178,8 +177,8 @@ export default function TermsPage() {
         </div>
 
         <div className="mt-10 border-t border-cyan-300/15 pt-6 text-sm leading-8 text-zinc-300">
-          <p>制定日：2026年7月8日</p>
-          <p>運営：Wait for Judge</p>
+          <p>Established: July 8, 2026</p>
+          <p>Operator: Wait for Judge anpanchan</p>
         </div>
       </article>
     </PublicPageShell>

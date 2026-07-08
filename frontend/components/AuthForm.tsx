@@ -24,6 +24,7 @@ type AuthFormProps = {
 type AuthFieldProps = {
   icon: LucideIcon;
   label: string;
+  wrapperClassName?: string;
 } & InputHTMLAttributes<HTMLInputElement>;
 
 const featureItems = [
@@ -121,7 +122,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         setEmail("");
         setPassword("");
         setPinCode("");
-        setSuccess("登録申請を受け付けました。管理者の承認後にログインできます。");
+        setSuccess("Your registration request has been received. You can log in after an administrator approves your account.");
       }
     } catch (cause) {
       setError(authErrorMessage(cause));
@@ -131,17 +132,23 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   const isLogin = mode === "login";
+  const formClassName = [
+    "group relative w-full rounded-lg border border-emerald-200/20 bg-slate-950/70 shadow-[0_24px_80px_rgba(0,0,0,0.52),0_0_70px_rgba(45,212,191,0.16)] backdrop-blur-2xl transition duration-300 hover:border-cyan-300/40 hover:shadow-[0_28px_90px_rgba(0,0,0,0.58),0_0_82px_rgba(34,211,238,0.18)]",
+    isLogin
+      ? "max-w-[520px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10"
+      : "max-w-[760px] px-5 py-5 sm:px-7 sm:py-6 lg:px-8",
+  ].join(" ");
 
   return (
-    <main className="relative min-h-dvh overflow-x-hidden bg-[#020617] text-white">
+    <section className="relative flex min-h-0 flex-1 overflow-x-hidden bg-[#020617] text-white">
       <AuthBackgroundDecorations />
 
-      <div className="relative z-10 mx-auto grid min-h-dvh w-full max-w-[1520px] grid-cols-1 items-center gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(400px,520px)] lg:gap-14 lg:px-[7vw] xl:gap-20">
+      <div className="relative z-10 mx-auto grid min-h-full w-full max-w-[1600px] grid-cols-1 items-center gap-6 px-5 py-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(400px,760px)] lg:gap-10 lg:px-[5vw] lg:py-8 xl:gap-16">
         <BrandPanel isLogin={isLogin} />
 
         <section className="flex w-full justify-center lg:justify-end">
           <form
-            className="group relative w-full max-w-[520px] rounded-lg border border-emerald-200/20 bg-slate-950/70 px-5 py-7 shadow-[0_24px_80px_rgba(0,0,0,0.52),0_0_70px_rgba(45,212,191,0.16)] backdrop-blur-2xl transition duration-300 hover:border-cyan-300/40 hover:shadow-[0_28px_90px_rgba(0,0,0,0.58),0_0_82px_rgba(34,211,238,0.18)] sm:px-8 sm:py-9 lg:px-10"
+            className={formClassName}
             onSubmit={handleSubmit}
           >
             <div className="pointer-events-none absolute inset-0 rounded-lg bg-[radial-gradient(circle_at_50%_0%,rgba(45,212,191,0.18),transparent_36%),linear-gradient(145deg,rgba(255,255,255,0.10),transparent_45%)]" />
@@ -149,15 +156,15 @@ export function AuthForm({ mode }: AuthFormProps) {
             <div className="pointer-events-none absolute -inset-px rounded-lg opacity-0 ring-1 ring-cyan-200/30 transition duration-300 group-hover:opacity-100" />
 
             <div className="relative">
-              <div className="mb-6 flex flex-wrap items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.035] px-3 py-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-cyan-100/75 sm:justify-between sm:text-[0.68rem]">
+              <div className={`${isLogin ? "mb-6" : "mb-4"} flex flex-wrap items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.035] px-3 py-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-cyan-100/75 sm:justify-between sm:text-[0.68rem]`}>
                 <span>ISC_onlinejudge</span>
                 <span className="hidden sm:inline">Online Judge Platform</span>
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="relative flex h-16 w-16 items-center justify-center">
+                <div className={`${isLogin ? "h-16 w-16" : "h-12 w-12"} relative flex items-center justify-center`}>
                   <div className="absolute inset-[-10px] rounded-lg bg-emerald-400/20 blur-lg" />
-                  <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-cyan-100/30 bg-white shadow-[0_14px_36px_rgba(0,0,0,0.44)]">
+                  <div className={`${isLogin ? "h-16 w-16" : "h-12 w-12"} relative flex items-center justify-center overflow-hidden rounded-lg border border-cyan-100/30 bg-white shadow-[0_14px_36px_rgba(0,0,0,0.44)]`}>
                     <img
                       alt="Wait for Judge"
                       className="h-full w-full object-cover"
@@ -166,34 +173,36 @@ export function AuthForm({ mode }: AuthFormProps) {
                   </div>
                 </div>
 
-                <div className="mb-8 mt-6">
-                  <h1 className="text-3xl font-bold tracking-normal text-white sm:text-4xl">
+                <div className={isLogin ? "mb-8 mt-6" : "mb-5 mt-4"}>
+                  <h1 className={`${isLogin ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"} font-bold tracking-normal text-white`}>
                     Wait for Judge
                   </h1>
-                  <p className="mt-3 font-mono text-sm text-emerald-200/90">
+                  <p className={`${isLogin ? "mt-3" : "mt-2"} font-mono text-sm text-emerald-200/90`}>
                     Code. Submit. Improve.
                   </p>
-                  <p className="mt-4 text-sm font-medium text-slate-300">
-                    {isLogin ? "ログインしてジャッジを待つ" : "新しい挑戦者を登録"}
+                  <p className={`${isLogin ? "mt-4" : "mt-2"} text-sm font-medium text-slate-300`}>
+                    {isLogin ? "Log in and wait for the judge" : "Register a new challenger"}
                   </p>
                 </div>
 
-                <div className="mb-8 grid w-full grid-cols-3 gap-2 rounded-md border border-white/10 bg-slate-900/40 p-2">
-                  {featureItems.map(({ icon: Icon, label }) => (
-                    <div
-                      className="flex min-h-16 flex-col items-center justify-center gap-2 rounded-md border border-white/5 bg-white/[0.025] px-2 text-cyan-100/80"
-                      key={label}
-                    >
-                      <Icon className="h-4 w-4 text-emerald-300" aria-hidden="true" />
-                      <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em]">
-                        {label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                {isLogin ? (
+                  <div className="mb-8 grid w-full grid-cols-3 gap-2 rounded-md border border-white/10 bg-slate-900/40 p-2">
+                    {featureItems.map(({ icon: Icon, label }) => (
+                      <div
+                        className="flex min-h-16 flex-col items-center justify-center gap-2 rounded-md border border-white/5 bg-white/[0.025] px-2 text-cyan-100/80"
+                        key={label}
+                      >
+                        <Icon className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+                        <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em]">
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
-              <div className="mb-6 flex items-center gap-3">
+              <div className={`${isLogin ? "mb-6" : "mb-4"} flex items-center gap-3`}>
                 <span className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-300/30 to-emerald-300/10" />
                 <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-300">
                   {isLogin ? "Login" : "Register"}
@@ -201,12 +210,18 @@ export function AuthForm({ mode }: AuthFormProps) {
                 <span className="h-px flex-1 bg-gradient-to-l from-transparent via-cyan-300/30 to-cyan-300/10" />
               </div>
 
-              <div className="space-y-4">
+              {!isLogin ? (
+                <div className="mb-4 rounded-md border border-amber-200/25 bg-amber-300/10 px-3 py-2 text-sm leading-6 text-amber-100">
+                  Registration is currently invite-only. A PIN code is required to create an account.
+                </div>
+              ) : null}
+
+              <div className={isLogin ? "space-y-4" : "grid gap-4 sm:grid-cols-2"}>
                 {isLogin ? (
                   <AuthField
                     autoComplete="username"
                     icon={User}
-                    label="username または email"
+                    label="username or email"
                     onChange={(event) => setIdentity(event.target.value)}
                     required
                     value={identity}
@@ -257,6 +272,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   required
                   type="password"
                   value={password}
+                  wrapperClassName={isLogin ? "" : "sm:col-span-2"}
                 />
               </div>
 
@@ -273,7 +289,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               ) : null}
 
               <button
-                className="group/button relative mt-7 inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-md border border-emerald-200/30 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 text-base font-bold text-slate-950 shadow-[0_16px_42px_rgba(20,184,166,0.24)] transition duration-200 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-300 hover:shadow-[0_18px_52px_rgba(34,211,238,0.26)] focus:outline-none focus:ring-2 focus:ring-cyan-200/60 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-70"
+                className={`${isLogin ? "mt-7" : "mt-5"} group/button relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-md border border-emerald-200/30 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 text-base font-bold text-slate-950 shadow-[0_16px_42px_rgba(20,184,166,0.24)] transition duration-200 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-300 hover:shadow-[0_18px_52px_rgba(34,211,238,0.26)] focus:outline-none focus:ring-2 focus:ring-cyan-200/60 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-wait disabled:opacity-70`}
                 disabled={submitting}
                 type="submit"
               >
@@ -282,7 +298,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   {submitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : null}
-                  {isLogin ? "ログイン" : "登録"}
+                  {isLogin ? "Login" : "Register"}
                 </span>
                 <ArrowRight
                   className="absolute right-5 h-5 w-5 transition group-hover/button:translate-x-1"
@@ -294,7 +310,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 <div className="mt-7">
                   <div className="flex items-center gap-5 text-sm text-zinc-400">
                     <span className="h-px flex-1 bg-white/20" />
-                    <span>または</span>
+                    <span>or</span>
                     <span className="h-px flex-1 bg-white/20" />
                   </div>
                   <div className="mt-6 text-center">
@@ -302,17 +318,17 @@ export function AuthForm({ mode }: AuthFormProps) {
                       className="text-base font-semibold text-emerald-300 transition hover:text-cyan-200"
                       href="/register"
                     >
-                      新規登録へ
+                      Create an account
                     </Link>
                   </div>
                 </div>
               ) : (
-                <div className="mt-7 text-center">
+                <div className="mt-5 text-center">
                   <Link
                     className="text-base font-semibold text-emerald-300 transition hover:text-cyan-200"
                     href="/login"
                   >
-                    ログインへ
+                    Back to login
                   </Link>
                 </div>
               )}
@@ -320,7 +336,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           </form>
         </section>
       </div>
-    </main>
+    </section>
   );
 }
 
@@ -354,9 +370,15 @@ function AuthBackgroundDecorations() {
   );
 }
 
-function AuthField({ icon: Icon, label, className = "", ...inputProps }: AuthFieldProps) {
+function AuthField({
+  icon: Icon,
+  label,
+  className = "",
+  wrapperClassName = "",
+  ...inputProps
+}: AuthFieldProps) {
   return (
-    <label className="block">
+    <label className={`block ${wrapperClassName}`}>
       <span className="mb-2 block text-sm font-medium text-slate-200">{label}</span>
       <span className="relative block">
         <input
@@ -374,7 +396,7 @@ function AuthField({ icon: Icon, label, className = "", ...inputProps }: AuthFie
 
 function BrandPanel({ isLogin }: { isLogin: boolean }) {
   return (
-    <section className="relative hidden min-h-[680px] items-center lg:flex">
+    <section className={`${isLogin ? "min-h-[680px]" : "min-h-[600px]"} relative hidden items-center lg:flex`}>
       <div className="relative w-full max-w-[690px]">
         <div className="absolute -left-10 top-8 h-36 w-36 rounded-lg border border-emerald-300/10 bg-emerald-300/[0.025] shadow-[0_0_60px_rgba(45,212,191,0.08)]" />
         <div className="absolute right-16 top-0 h-20 w-20 rounded-lg border border-cyan-300/10 bg-cyan-300/[0.025]" />
@@ -433,7 +455,7 @@ function BrandPanel({ isLogin }: { isLogin: boolean }) {
       </div>
 
       <p className="absolute bottom-0 left-[-4vw] text-sm text-slate-500">
-        © 2026 Wait for Judge. All rights reserved.
+        (c) 2026 Wait for Judge. All rights reserved.
       </p>
     </section>
   );
@@ -442,10 +464,10 @@ function BrandPanel({ isLogin }: { isLogin: boolean }) {
 function authErrorMessage(cause: unknown) {
   const message = cause instanceof Error ? cause.message : "";
   if (message.includes("invalid pin code")) {
-    return "PINコードが正しくありません。";
+    return "The PIN code is incorrect.";
   }
   if (message.includes("user is inactive")) {
-    return "このアカウントは承認待ちです。管理者の承認後にログインできます。";
+    return "This account is waiting for approval. You can log in after an administrator approves it.";
   }
-  return message || "認証に失敗しました";
+  return message || "Authentication failed.";
 }
