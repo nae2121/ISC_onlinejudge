@@ -14,7 +14,7 @@ export default function MembersPage() {
   return (
     <PublicPageShell
       active="members"
-      description="WfJ で活動するメンバー紹介ページです。公開用プロフィールの準備ができ次第、順次掲載します。"
+      description="WfJ で活動するメンバー紹介ページです。"
       eyebrow="WfJ Members"
       title="Members"
     >
