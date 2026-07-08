@@ -13,204 +13,206 @@ type PolicySection = {
 
 const sections: PolicySection[] = [
   {
-    title: "第1条（取得する情報）",
-    body: ["運営は、本サービスの提供にあたり、以下の情報を取得することがあります。"],
+    title: "Article 1. Information We Collect",
+    body: ["The Operations Team may collect the following information in order to provide the Service."],
     groups: [
       {
-        title: "アカウント登録時に入力された情報",
+        title: "Information entered during account registration",
         items: [
-          "ユーザー名",
-          "表示名",
-          "メールアドレス",
-          "パスワードに関する情報",
-          "所属、学年、期生など、運営が必要と判断した情報",
+          "Username",
+          "Display name",
+          "Email address",
+          "Information related to passwords",
+          "Affiliation, school year, cohort, or other information deemed necessary by the Operations Team",
         ],
       },
       {
-        title: "本サービスの利用により生成される情報",
+        title: "Information generated through use of the Service",
         items: [
-          "提出したソースコード",
-          "提出日時",
-          "採点結果",
-          "実行時間、メモリ使用量",
-          "使用言語",
-          "コンテスト参加履歴",
-          "ランキング、スコア、正誤情報",
-          "問題の閲覧・提出履歴",
+          "Submitted source code",
+          "Submission date and time",
+          "Judging results",
+          "Execution time and memory usage",
+          "Programming language used",
+          "Contest participation history",
+          "Rankings, scores, correctness information",
+          "Problem viewing and submission history",
         ],
       },
       {
-        title: "技術的な情報",
+        title: "Technical information",
         items: [
-          "IPアドレス",
-          "ブラウザ、OS、端末に関する情報",
-          "アクセス日時",
-          "アクセスログ",
-          "エラーログ",
-          "Cookie、セッション情報",
-          "不正利用防止やセキュリティ対策のために必要なログ",
+          "IP address",
+          "Browser, operating system, and device information",
+          "Access date and time",
+          "Access logs",
+          "Error logs",
+          "Cookies and session information",
+          "Logs necessary to prevent unauthorized use and maintain security",
         ],
       },
       {
-        title: "お問い合わせ時に取得する情報",
+        title: "Information collected when users contact us",
         items: [
-          "氏名または表示名",
-          "メールアドレス",
-          "お問い合わせ内容",
-          "本人確認に必要な情報",
+          "Name or display name",
+          "Email address",
+          "Inquiry details",
+          "Information necessary for identity verification",
         ],
       },
     ],
   },
   {
-    title: "第2条（利用目的）",
-    body: ["運営は、取得した情報を以下の目的で利用します。"],
+    title: "Article 2. Purposes of Use",
+    body: ["The Operations Team uses collected information for the following purposes."],
     items: [
-      "本サービスの提供、運営、維持のため",
-      "アカウント登録、本人確認、ログイン認証、利用者管理のため",
-      "提出されたコードの実行、採点、結果表示のため",
-      "提出履歴、ランキング、コンテスト結果を表示するため",
-      "コンテストの運営、公平性の確認、不正行為の調査のため",
-      "本サービスの改善、機能追加、不具合修正のため",
-      "利用状況の分析、統計情報の作成のため",
-      "サーバー負荷対策、障害対応、セキュリティ対策のため",
-      "不正アクセス、攻撃、迷惑行為、規約違反への対応のため",
-      "利用者からのお問い合わせに対応するため",
-      "重要なお知らせ、メンテナンス情報、規約変更等を通知するため",
-      "法令または公的機関からの要請に対応するため",
+      "To provide, operate, and maintain the Service.",
+      "To register accounts, verify identity, authenticate logins, and manage users.",
+      "To execute submitted code, judge submissions, and display results.",
+      "To display submission history, rankings, and contest results.",
+      "To operate contests, confirm fairness, and investigate misconduct.",
+      "To improve the Service, add features, and fix defects.",
+      "To analyze usage and create statistical information.",
+      "To handle server load, incidents, and security measures.",
+      "To respond to unauthorized access, attacks, nuisance behavior, and violations of terms.",
+      "To respond to inquiries from users.",
+      "To notify users of important announcements, maintenance information, and changes to terms.",
+      "To respond to requests from laws, regulations, or public authorities.",
     ],
   },
   {
-    title: "第3条（提出コード・採点情報の取扱い）",
+    title: "Article 3. Handling of Submitted Code and Judging Information",
     items: [
-      "利用者が本サービスに提出したソースコード、採点結果、提出履歴等は、本サービスの機能提供のために保存されます。",
-      "提出コードは、採点、再採点、不具合調査、不正行為調査、サービス改善のために運営が確認する場合があります。",
-      "コンテストやランキング機能において、ユーザー名、表示名、スコア、順位、提出結果などが他の利用者に表示される場合があります。",
-      "運営は、個人を特定できない形に加工した統計情報を、サービス改善や活動報告のために利用することがあります。",
+      "Source code, judging results, submission history, and related information submitted by users are stored in order to provide Service features.",
+      "The Operations Team may review submitted code for judging, rejudging, defect investigation, misconduct investigation, and Service improvement.",
+      "In contest and ranking features, usernames, display names, scores, rankings, submission results, and related information may be displayed to other users.",
+      "The Operations Team may use statistical information processed so that individuals cannot be identified for Service improvement and activity reporting.",
     ],
   },
   {
-    title: "第4条（Cookie等の利用）",
+    title: "Article 4. Use of Cookies and Similar Technologies",
     items: [
-      "本サービスでは、ログイン状態の維持、セッション管理、セキュリティ対策、利便性向上のためにCookieまたはこれに類する技術を利用することがあります。",
-      "利用者は、ブラウザの設定によりCookieを無効にできます。ただし、Cookieを無効にした場合、本サービスの一部機能を利用できないことがあります。",
-      "アクセス解析ツール等を導入する場合は、取得する情報、利用目的、提供先等を本ポリシーまたは本サービス上で明示します。",
+      "The Service may use cookies or similar technologies to maintain login status, manage sessions, improve security, and enhance convenience.",
+      "Users may disable cookies through browser settings. However, if cookies are disabled, some Service features may not be available.",
+      "If analytics tools or similar services are introduced, the information collected, purposes of use, and recipients will be disclosed in this Policy or on the Service.",
     ],
   },
   {
-    title: "第5条（第三者提供）",
-    body: ["運営は、以下の場合を除き、利用者本人の同意なく個人情報を第三者に提供しません。"],
-    items: [
-      "法令に基づく場合",
-      "人の生命、身体または財産の保護のために必要がある場合",
-      "公的機関、学校、またはこれに準ずる組織から、法令または正当な理由に基づく要請があった場合",
-      "利用者が利用規約に違反し、本サービスの安全性、公平性、運営に重大な影響を与えると運営が判断した場合",
-      "本サービスの運営に必要な範囲で、業務委託先に情報を提供する場合",
-    ],
-  },
-  {
-    title: "第6条（外部サービス・委託先の利用）",
-    items: [
-      "運営は、本サービスの提供にあたり、サーバー、データベース、メール配信、ドメイン管理、セキュリティ対策、アクセス解析等の外部サービスを利用することがあります。",
-      "外部サービスまたは委託先に情報を取り扱わせる場合、運営は必要な範囲に限定して情報を提供し、適切な管理に努めます。",
-      "外部サービスの仕様変更、障害、停止等により本サービスの一部が利用できなくなる場合があります。",
-    ],
-  },
-  {
-    title: "第7条（安全管理措置）",
+    title: "Article 5. Provision to Third Parties",
     body: [
-      "運営は、取得した情報について、漏えい、滅失、毀損、不正アクセス、不正利用を防止するため、必要かつ適切な安全管理措置を講じます。",
-      "主な対策は以下のとおりです。",
+      "The Operations Team does not provide personal information to third parties without the user's consent, except in the following cases.",
     ],
     items: [
-      "パスワードのハッシュ化等による保護",
-      "アクセス権限の管理",
-      "管理者権限の適切な制限",
-      "通信の暗号化",
-      "ログの取得および監視",
-      "不正アクセス対策",
-      "脆弱性対応およびシステム更新",
-      "データベース、サーバー、採点環境の分離または制限",
-      "必要に応じたバックアップの取得",
+      "When required by law.",
+      "When necessary to protect a person's life, body, or property.",
+      "When requested by a public authority, school, or equivalent organization based on law or a legitimate reason.",
+      "When the Operations Team determines that a user has violated the Terms and may seriously affect the safety, fairness, or operation of the Service.",
+      "When information is provided to contractors within the scope necessary to operate the Service.",
+    ],
+  },
+  {
+    title: "Article 6. Use of External Services and Contractors",
+    items: [
+      "The Operations Team may use external services for servers, databases, email delivery, domain management, security measures, analytics, and related operations.",
+      "When external services or contractors handle information, the Operations Team limits the information provided to the necessary scope and strives to ensure appropriate management.",
+      "Some Service features may become unavailable due to specification changes, failures, suspension, or other issues with external services.",
+    ],
+  },
+  {
+    title: "Article 7. Security Measures",
+    body: [
+      "The Operations Team takes necessary and appropriate security measures to prevent leakage, loss, damage, unauthorized access, and unauthorized use of collected information.",
+      "Primary measures include the following.",
+    ],
+    items: [
+      "Protecting passwords through hashing and similar methods.",
+      "Managing access permissions.",
+      "Appropriately limiting administrator privileges.",
+      "Encrypting communications.",
+      "Collecting and monitoring logs.",
+      "Taking measures against unauthorized access.",
+      "Responding to vulnerabilities and updating systems.",
+      "Separating or restricting databases, servers, and judging environments.",
+      "Creating backups as necessary.",
     ],
     note: [
-      "ただし、インターネット上の通信およびシステムの性質上、完全な安全性を保証するものではありません。",
+      "However, due to the nature of internet communications and systems, the Operations Team does not guarantee complete security.",
     ],
   },
   {
-    title: "第8条（保存期間）",
+    title: "Article 8. Retention Period",
     items: [
-      "運営は、本サービスの提供に必要な期間、取得した情報を保存します。",
-      "アカウント削除後も、不正行為調査、障害対応、コンテスト結果の保持、法令対応、バックアップ管理のために、一定期間情報を保存する場合があります。",
-      "保存の必要がなくなった情報については、合理的な範囲で削除または匿名化します。",
+      "The Operations Team stores collected information for the period necessary to provide the Service.",
+      "Even after account deletion, information may be retained for a certain period for misconduct investigations, incident response, preservation of contest results, legal compliance, and backup management.",
+      "Information that is no longer necessary will be deleted or anonymized within a reasonable scope.",
     ],
   },
   {
-    title: "第9条（利用者による確認・訂正・削除等）",
+    title: "Article 9. User Requests for Confirmation, Correction, Deletion, and Suspension of Use",
     body: [
-      "利用者は、運営に対して、自己の個人情報について、確認、訂正、削除、利用停止等を求めることができます。",
-      "運営は、本人確認を行ったうえで、法令および本サービスの運営上必要な範囲において、合理的な期間内に対応します。",
-      "ただし、以下の場合は、全部または一部の対応を行えないことがあります。",
+      "Users may request confirmation, correction, deletion, suspension of use, or similar handling of their own personal information.",
+      "After verifying the user's identity, the Operations Team will respond within a reasonable period to the extent required by law and necessary for operating the Service.",
+      "However, the Operations Team may be unable to fulfill all or part of a request in the following cases.",
     ],
     items: [
-      "本人確認ができない場合",
-      "コンテスト結果、公平性、不正調査に影響する場合",
-      "法令上または運営上、保存が必要な場合",
-      "他の利用者または第三者の権利利益を害するおそれがある場合",
-      "技術的に削除が困難なバックアップデータ等に含まれる場合",
+      "Identity verification cannot be completed.",
+      "The request would affect contest results, fairness, or misconduct investigations.",
+      "Retention is required by law or necessary for operations.",
+      "The request may harm the rights or interests of other users or third parties.",
+      "The information is included in backup data or similar records that are technically difficult to delete.",
     ],
   },
   {
-    title: "第10条（未成年者の利用）",
+    title: "Article 10. Use by Minors",
     body: [
-      "未成年の利用者は、必要に応じて保護者または学校関係者の同意を得たうえで本サービスを利用するものとします。",
-      "運営は、未成年者の利用に関して必要があると判断した場合、アカウント利用の制限、情報の確認、または保護者・学校関係者への確認を行うことがあります。",
+      "Minor users shall use the Service with consent from a parent, guardian, or school-related person as necessary.",
+      "If the Operations Team determines that action is necessary regarding use by a minor, it may restrict account use, verify information, or confirm matters with a parent, guardian, or school-related person.",
     ],
   },
   {
-    title: "第11条（公開情報について）",
-    body: ["本サービスでは、以下の情報が他の利用者またはインターネット上に公開される場合があります。"],
+    title: "Article 11. Public Information",
+    body: ["The following information may be disclosed to other users or on the internet through the Service."],
     items: [
-      "ユーザー名または表示名",
-      "プロフィール情報",
-      "ランキング、スコア、順位",
-      "コンテスト参加結果",
-      "問題への提出状況",
-      "運営が公開対象として設定した情報",
+      "Username or display name.",
+      "Profile information.",
+      "Rankings, scores, and placements.",
+      "Contest participation results.",
+      "Submission status for problems.",
+      "Information designated by the Operations Team as public.",
     ],
     note: [
-      "利用者は、公開される可能性のある情報に、住所、電話番号、個人用メールアドレス、その他公開に適さない情報を含めないよう注意してください。",
+      "Users should avoid including addresses, phone numbers, personal email addresses, or other information unsuitable for public disclosure in information that may become public.",
     ],
   },
   {
-    title: "第12条（個人を特定しない情報の利用）",
+    title: "Article 12. Use of Non-Identifiable Information",
     body: [
-      "運営は、利用者個人を特定できない形に加工した統計情報、利用状況、提出傾向、採点状況等を、以下の目的で利用することがあります。",
+      "The Operations Team may use statistical information, usage status, submission trends, judging status, and similar information processed so that individual users cannot be identified for the following purposes.",
     ],
     items: [
-      "本サービスの改善",
-      "サーバー負荷や採点環境の改善",
-      "問題の難易度調整",
-      "活動報告",
-      "学習支援",
-      "研究、発表、資料作成",
+      "Improving the Service.",
+      "Improving server load handling and judging environments.",
+      "Adjusting problem difficulty.",
+      "Activity reporting.",
+      "Learning support.",
+      "Research, presentations, and document creation.",
     ],
-    note: ["この場合、特定の個人が識別されないよう配慮します。"],
+    note: ["In such cases, the Operations Team will take care so that specific individuals are not identified."],
   },
   {
-    title: "第13条（プライバシーポリシーの変更）",
+    title: "Article 13. Changes to This Privacy Policy",
     items: [
-      "運営は、必要に応じて本ポリシーを変更することがあります。",
-      "本ポリシーを変更した場合、運営は本サービス上での掲示その他適切な方法により利用者へ周知します。",
-      "変更後に利用者が本サービスを利用した場合、変更後の本ポリシーに同意したものとみなします。",
+      "The Operations Team may change this Policy as necessary.",
+      "When this Policy is changed, the Operations Team will notify users by posting on the Service or by another appropriate method.",
+      "If a user continues to use the Service after this Policy is changed, the user shall be deemed to have agreed to the revised Policy.",
     ],
   },
   {
-    title: "第14条（お問い合わせ）",
+    title: "Article 14. Contact",
     body: [
-      "本ポリシーに関するお問い合わせ、個人情報の確認・訂正・削除等の請求は、運営が指定する方法により行うものとします。",
-      "お問い合わせ先：Wait for Judge 運営チーム",
-      "X : anpanchan1818",
+      "Inquiries regarding this Policy and requests for confirmation, correction, deletion, or similar handling of personal information shall be made using the method specified by the Operations Team.",
+      "Contact: Wait for Judge Operations Team",
+      "X: anpanchan1818",
     ],
   },
 ];
@@ -219,15 +221,16 @@ export default function PrivacyPage() {
   return (
     <PublicPageShell
       active="privacy"
-      description="Wait for Judge / WfJ における利用者情報の取扱いについて定めるものです。"
+      description="This Privacy Policy explains how Wait for Judge / WfJ handles user information."
       eyebrow="Privacy Policy"
-      title="プライバシーポリシー"
+      title="Privacy Policy"
     >
       <article className="rounded-md border border-cyan-300/15 bg-[#06131c] p-6 shadow-[0_0_32px_rgba(20,241,216,0.06)] sm:p-8">
         <div className="space-y-4 border-b border-cyan-300/15 pb-8 text-sm leading-8 text-zinc-300">
           <p>
-            Wait for Judge 運営チーム（以下「運営」といいます。）は、運営が提供するオンラインジャッジサービス「Wait
-            for Judge / WfJ」（以下「本サービス」といいます。）における利用者情報の取扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」といいます。）を定めます。
+            The Wait for Judge Operations Team establishes this Privacy Policy for the handling of
+            user information in the online judge service "Wait for Judge / WfJ" provided by the
+            Operations Team.
           </p>
         </div>
 
@@ -265,7 +268,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-10 border-t border-cyan-300/15 pt-6 text-sm leading-8 text-zinc-300">
-          <p>制定日：2026年7月8日</p>
+          <p>Established: July 8, 2026</p>
         </div>
       </article>
     </PublicPageShell>

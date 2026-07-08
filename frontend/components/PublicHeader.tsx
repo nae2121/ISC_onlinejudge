@@ -26,7 +26,7 @@ const navItems: Array<{
   { href: "/changelog", icon: History, key: "changelog", label: "Changelog" },
 ];
 
-export function PublicHeader({ active = "home" }: { active?: PublicNavKey }) {
+export function PublicHeader({ active = null }: { active?: PublicNavKey | null }) {
   return (
     <header className="sticky top-0 z-30 border-b border-cyan-300/15 bg-[#02070c]/90 text-zinc-100 shadow-[0_1px_28px_rgba(20,241,216,0.08)] backdrop-blur-xl">
       <div className="mx-auto flex min-h-[104px] w-full max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6 xl:min-h-[78px] xl:flex-nowrap xl:py-0">
@@ -101,7 +101,7 @@ export function PublicFooter() {
     <footer className="border-t border-cyan-300/10 bg-[#02070c] text-zinc-400">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 text-sm sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2">
-          <span>© 2026 WfJ (ISC_onlinejudge)</span>
+          <span>(c) 2026 WfJ (ISC_onlinejudge)</span>
         </div>
       </div>
     </footer>

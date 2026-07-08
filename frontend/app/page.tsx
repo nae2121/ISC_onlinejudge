@@ -33,10 +33,10 @@ const featureItems = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-dvh bg-[#02070c] text-zinc-50">
+    <main className="flex min-h-dvh flex-col bg-[#02070c] text-zinc-50">
       <PublicHeader active="home" />
 
-      <section className="public-cyber-bg relative isolate overflow-hidden border-b border-cyan-300/10">
+      <section className="public-cyber-bg relative isolate flex flex-1 overflow-hidden border-b border-cyan-300/10">
         <div className="absolute left-4 top-12 hidden w-72 rounded-md border border-cyan-300/10 bg-black/20 p-5 font-mono text-xs leading-6 text-cyan-300/45 shadow-[0_0_45px_rgba(20,241,216,0.08)] lg:block">
           <p>#include &lt;bits/stdc++.h&gt;</p>
           <p>using namespace std;</p>
@@ -54,7 +54,7 @@ export default function HomePage() {
           <p>cout &lt;&lt; score &lt;&lt; '\n';</p>
         </div>
 
-        <div className="relative mx-auto grid min-h-[calc(100svh-126px)] w-full max-w-7xl place-items-center px-4 py-10 sm:px-6 lg:py-12">
+        <div className="relative mx-auto grid w-full max-w-7xl flex-1 place-items-center px-4 py-6 sm:px-6 lg:py-8">
           <div className="w-full">
             <div className="max-w-3xl">
               <div>
@@ -65,7 +65,7 @@ export default function HomePage() {
                   ISC Online Judge  Learn Challenge Improve
                 </h1>
                 <p className="mt-5 text-base leading-8 text-zinc-300">
-                  WfJ is an online judge platform that connects problem solving, submissions, judging results, and rankings in one smooth experience. From everyday practice to small contests, it provides the foundation for ISC’s programming activities.
+                  WfJ is an online judge platform that connects problem solving, submissions, judging results, and rankings in one smooth experience. From everyday practice to small contests, it provides the foundation for ISC's programming activities.
                 </p>
               </div>
             </div>
